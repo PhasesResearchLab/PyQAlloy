@@ -37,7 +37,7 @@ class AbnormalDataAnalyzer:
     def get_allDOIs(self):
         return [e['doi'] for e in self.collection.aggregate([
             {'$match': {'reference.doi': {'$ne': None}}},
-            {'$group': {'_id': '$reference.doi'}}, 
+            {'$group': {'_id': '$reference.doi'}},
             {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
     def analyze_nnDistances(self, doi: str):
