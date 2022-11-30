@@ -34,6 +34,11 @@ class AbnormalDataAnalyzer:
               f'points detected.')
         print(f'********  AbnormalDataAnalyzer Initialized  ********')
 
+    def get_allDOIs(self):
+        return [e['doi'] for e in self.collection.aggregate([
+            {'$match': {'reference.doi': {'$ne': None}}},
+            {'$group': {'_id': '$reference.doi'}}, 
+            {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
     def analyze_nnDistances(self, doi: str):
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
@@ -47,4 +52,3 @@ class AbnormalDataAnalyzer:
         for l, f in zip(nn_distances, formulas):
             print(f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}')
 
-    
