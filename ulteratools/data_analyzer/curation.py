@@ -4,7 +4,16 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymatgen.core import Composition
 from sklearn.neighbors import NearestNeighbors
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
+from sklearn.cluster import DBSCAN
 
+from scipy.spatial import distance_matrix
+from statistics import mean
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
 
 class Analyzer:
     def __init__(self, database, collection):
@@ -29,13 +38,17 @@ class SingleDOIAnalyzer(Analyzer):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.doi = doi
-        self.formulas = set()
+        self.formulas = list()
         self.nn_distances = list()
         self.names = set()
         self.els = set()
         self.compVecs = list()
         self.fStrings = list()
         self.printLog = str()
+
+        self.compVecs_2DPCA = list()
+        self.compVecs_2DPCA_minRangeInDim = None
+
         print(f'********  Analyzer Initialized  ********')
 
 
@@ -45,20 +58,22 @@ class SingleDOIAnalyzer(Analyzer):
     def setName(self, name):
         self.name = name
 
-    def getCompVecs(self, collection: Collection, doi: str):
+    def getCompVecs(self):
         # Reset formulas, els, etc
-        self.formulas, self.els, self.names, self.compVecs, self.fStrings = set(), set(), set(), list(), list()
+        self.formulas, self.els, self.names, self.compVecs, self.fStrings = list(), set(), set(), list(), list()
         # Find a set of unique formulas from DOI and a set of all elements present in them
-        for e in collection.find({'reference.doi': doi}):
+        for e in self.collection.find({'reference.doi': self.doi}):
             c = Composition(e['material']['formula'])
-            self.formulas.add(c.reduced_formula)
-            self.names.add(e['meta']['name'])
-            self.els.update(list(c.get_el_amt_dict().keys()))
-            self.fStrings.append(
-                e['material']['formula']#+'<br>'+
-                #e['material']['percentileFormula']+'<br>'+
-                #e['material']['relationalFormula']
-                )
+            reducedFormula = c.reduced_formula
+            if reducedFormula not in self.formulas:
+                self.formulas.append(reducedFormula)
+                self.names.add(e['meta']['name'])
+                self.els.update(list(c.get_el_amt_dict().keys()))
+                self.fStrings.append(
+                    e['material']['formula']#+'<br>'+
+                    #e['material']['percentileFormula']+'<br>'+
+                    #e['material']['relationalFormula']
+                    )
         # Vectorize based on a list of elements
         self.els = list(self.els)
         for f in self.formulas:
@@ -68,12 +83,12 @@ class SingleDOIAnalyzer(Analyzer):
 
     def analyze_nnDistances(self):
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
-        self.getCompVecs(collection=self.collection, doi=self.doi)
+        self.getCompVecs()
         self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
 
     def print_nnDistances(self, minSamples=2, printOut=True):
-        assert self.compVecs is not None
-        assert self.nn_distances is not None
+        assert len(self.compVecs)>0
+        assert len(self.nn_distances)>0
         assert len(self.formulas)==len(self.nn_distances)
         if len(self.nn_distances)>=minSamples:
             if self.name is None or self.name in self.names:
@@ -86,14 +101,42 @@ class SingleDOIAnalyzer(Analyzer):
                         print(temp_line)
                 self.printLog += '\n'
             else:
-                temp_message = f'Skipping {self.doi}. Specified researcher ({self.name}) not present in the group ({self.names})'
+                temp_message = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
                 self.printLog += temp_message
                 if printOut:
                     print(temp_message)
         else:
-            temp_message = f'Skipping {self.doi}. Not enough data samples (minSamples={minSamples})'
+            temp_message = f'Skipping {self.doi:<20}. Not enough data samples (minSamples={minSamples})'
             self.printLog += temp_message
             if printOut:
                 print(temp_message)
+
+    def get_compVecs_2DPCA(self):
+        assert len(self.compVecs)>0
+        pca = PCA(n_components=2)
+        self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
+        self.compVecs_2DPCA_minRangeInDim = min([
+            max(self.compVecs_2DPCA[:, 0]) - min(self.compVecs_2DPCA[:, 0]),
+            max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
+
+    def analyze_compVecs_2DPCA(self, minDistance=0.001):
+        assert len(self.compVecs_2DPCA)>0
+        assert len(self.formulas) > 0
+        assert len(self.fStrings) > 0
+        if self.compVecs_2DPCA_minRangeInDim>minDistance:
+            fig = px.scatter(
+                x=self.compVecs_2DPCA[:, 0],
+                y=self.compVecs_2DPCA[:, 1],
+                color=self.formulas,
+                hover_name=self.fStrings,
+                color_discrete_sequence=px.colors.qualitative.Dark24,
+                width=700, height=400,
+                labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported'},
+                template='plotly_white')
+            fig.update_traces(
+                marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
+            fig.show()
+        else:
+            print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
 
 
