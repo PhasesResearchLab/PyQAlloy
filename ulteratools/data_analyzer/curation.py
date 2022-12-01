@@ -24,7 +24,7 @@ def getCompVecs(collection: Collection, doi: str):
     return compVecs, formulas, names, els
 
 class SingleDOIAnalyzer:
-    def __init__(self, doi:str, database='ULTERA', collection='CURATED', name=None):
+    def __init__(self, doi=None, database='ULTERA', collection='CURATED', name=None):
 
         with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
@@ -44,6 +44,12 @@ class SingleDOIAnalyzer:
         self.compVecs = None
 
         print(f'********  AbnormalDataAnalyzer Initialized  ********')
+
+    def setDOI(self, doi: str):
+        self.doi = doi
+
+    def setName(self, name):
+        self.name = name
 
     def get_allDOIs(self):
         return [e['doi'] for e in self.collection.aggregate([
