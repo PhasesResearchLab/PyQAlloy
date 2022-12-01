@@ -33,6 +33,12 @@ class TestADA(unittest.TestCase):
 
         with self.subTest(msg='Test Name Selection - revert to all names'):
             self.sDOI.setName(None)
+            self.sDOI.print_nnDistances()
+
+        with self.subTest(msg='Print Selection - min samples'):
+            self.sDOI.print_nnDistances(minSamples=32)
+
+
 
 
 if __name__ == '__main__':

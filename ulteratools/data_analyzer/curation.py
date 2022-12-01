@@ -35,6 +35,7 @@ class SingleDOIAnalyzer(Analyzer):
         self.els = set()
         self.compVecs = list()
         self.fStrings = list()
+        self.printLog = str()
         print(f'********  Analyzer Initialized  ********')
 
 
@@ -70,16 +71,29 @@ class SingleDOIAnalyzer(Analyzer):
         self.getCompVecs(collection=self.collection, doi=self.doi)
         self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
 
-    def print_nnDistances(self):
+    def print_nnDistances(self, minSamples=2, printOut=True):
         assert self.compVecs is not None
         assert self.nn_distances is not None
         assert len(self.formulas)==len(self.nn_distances)
-        if self.name is None or self.name in self.names:
-            maxD = max(self.nn_distances)
-            for l, f in zip(self.nn_distances, self.formulas):
-                print(f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}')
+        if len(self.nn_distances)>=minSamples:
+            if self.name is None or self.name in self.names:
+                maxD = max(self.nn_distances)
+                self.printLog += f'\n--->  {self.doi}'
+                for l, f in zip(self.nn_distances, self.formulas):
+                    temp_line = f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}'
+                    self.printLog += temp_line+'\n'
+                    if printOut:
+                        print(temp_line)
+                self.printLog += '\n'
+            else:
+                temp_message = f'Skipping {self.doi}. Specified researcher ({self.name}) not present in the group ({self.names})'
+                self.printLog += temp_message
+                if printOut:
+                    print(temp_message)
         else:
-            print(f'Skipping {self.doi}. Specified researcher ({self.name}) not present in the group ({self.names})')
-
+            temp_message = f'Skipping {self.doi}. Not enough data samples (minSamples={minSamples})'
+            self.printLog += temp_message
+            if printOut:
+                print(temp_message)
 
 
