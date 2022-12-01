@@ -22,14 +22,17 @@ class TestADA(unittest.TestCase):
             self.sDOI.print_nnDistances()
 
         with self.subTest(msg='Test Name Selection. - filled'):
-            temp_sDOI = curation.SingleDOIAnalyzer(name='Marcia Ahn', doi='10.3390/met9010076')
-            temp_sDOI.analyze_nnDistances()
-            temp_sDOI.print_nnDistances()
+            self.sDOI.setName('Marcia Ahn')
+            self.sDOI.analyze_nnDistances()
+            self.sDOI.print_nnDistances()
 
         with self.subTest(msg='Test Name Selection. - empty'):
-            temp_sDOI = curation.SingleDOIAnalyzer(name='wnjvbwejhcv', doi='10.3390/met9010076')
-            temp_sDOI.analyze_nnDistances()
-            temp_sDOI.print_nnDistances()
+            self.sDOI.setName('39fd48rym7sfg48g23f')
+            self.sDOI.analyze_nnDistances()
+            self.sDOI.print_nnDistances()
+
+        with self.subTest(msg='Test Name Selection - revert to all names'):
+            self.sDOI.setName(None)
 
 
 if __name__ == '__main__':
