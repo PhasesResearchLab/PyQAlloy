@@ -23,9 +23,8 @@ def getCompVecs(collection: Collection, doi: str):
 
     return compVecs, formulas, names, els
 
-class SingleDOIAnalyzer:
-    def __init__(self, doi=None, database='ULTERA', collection='CURATED', name=None):
-
+class Analyzer:
+    def __init__(self, database, collection):
         with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
@@ -35,6 +34,10 @@ class SingleDOIAnalyzer:
         print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
               f'points detected.')
 
+class SingleDOIAnalyzer(Analyzer):
+
+    def __init__(self, doi=None, name=None, database='ULTERA', collection='CURATED'):
+        super().__init__(database=database, collection=collection)
         self.name = name
         self.doi = doi
         self.formulas = None
