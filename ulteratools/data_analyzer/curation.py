@@ -23,9 +23,9 @@ def getCompVecs(collection: Collection, doi: str):
 
     return compVecs, formulas, names, els
 
-class AbnormalDataAnalyzer:
-    def __init__(self, database='ULTERA', collection='CURATED', name=None):
-        self.name = name
+class SingleDOIAnalyzer:
+    def __init__(self, doi:str, database='ULTERA', collection='CURATED', name=None):
+
         with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
@@ -34,6 +34,15 @@ class AbnormalDataAnalyzer:
         self.collection = self.ultera_client[database][collection]
         print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
               f'points detected.')
+
+        self.name = name
+        self.doi = doi
+        self.formulas = None
+        self.nn_distances = None
+        self.names = None
+        self.els = None
+        self.compVecs = None
+
         print(f'********  AbnormalDataAnalyzer Initialized  ********')
 
     def get_allDOIs(self):
@@ -42,18 +51,19 @@ class AbnormalDataAnalyzer:
             {'$group': {'_id': '$reference.doi'}},
             {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
-    def analyze_nnDistances(self, doi: str):
+    def analyze_nnDistances(self):
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
-        compVecs, formulas, names, els = getCompVecs(collection=self.collection, doi=doi)
-        nn_distances = [l[1] for l in nn.fit(compVecs).kneighbors(compVecs)[0]]
-        return formulas, nn_distances, names
+        self.compVecs, self.formulas, self.names, self.els = getCompVecs(collection=self.collection, doi=self.doi)
+        self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
 
-    def print_nnDistances(self, formulas: list, nn_distances: list, names: set):
-        assert len(formulas)==len(nn_distances)
-        if self.name is None or self.name in names:
-            maxD = max(nn_distances)
-            for l, f in zip(nn_distances, formulas):
+    def print_nnDistances(self):
+        assert self.compVecs is not None
+        assert self.nn_distances is not None
+        assert len(self.formulas)==len(self.nn_distances)
+        if self.name is None or self.name in self.names:
+            maxD = max(self.nn_distances)
+            for l, f in zip(self.nn_distances, self.formulas):
                 print(f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}')
         else:
-            print(f'Skipping. Specified researcher name ({self.name}) not present in the data group ({names})')
+            print(f'Skipping {self.doi}. Specified researcher ({self.name}) not present in the group ({self.names})')
 
