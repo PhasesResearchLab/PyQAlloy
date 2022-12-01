@@ -7,11 +7,12 @@ from sklearn.neighbors import NearestNeighbors
 
 
 def getCompVecs(collection: Collection, doi: str):
-    formulas, els, compVecs = set(), set(), list()
+    formulas, els, names, compVecs = set(), set(), set(), list()
     # Find a set of unique formulas from DOI and a set of all elements present in them
     for e in collection.find({'reference.doi': doi}):
         c = Composition(e['material']['formula'])
         formulas.add(c.reduced_formula)
+        names.add(e['meta']['name'])
         els.update(list(c.get_el_amt_dict().keys()))
     # Vectorize based on a list of elements
     els = list(els)
@@ -20,10 +21,11 @@ def getCompVecs(collection: Collection, doi: str):
         compVec = [cd[el] if el in cd else 0 for el in els]
         compVecs.append(compVec)
 
-    return compVecs, formulas, els
+    return compVecs, formulas, names, els
 
 class AbnormalDataAnalyzer:
     def __init__(self, database='ULTERA', collection='CURATED', name=None):
+        self.name = name
         with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
@@ -42,13 +44,16 @@ class AbnormalDataAnalyzer:
 
     def analyze_nnDistances(self, doi: str):
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
-        compVecs, formulas, els = getCompVecs(collection=self.collection, doi=doi)
+        compVecs, formulas, names, els = getCompVecs(collection=self.collection, doi=doi)
         nn_distances = [l[1] for l in nn.fit(compVecs).kneighbors(compVecs)[0]]
-        return nn_distances
+        return formulas, nn_distances, names
 
-    def print_nnDistances(self, formulas: list, nn_distances: list):
+    def print_nnDistances(self, formulas: list, nn_distances: list, names: set):
         assert len(formulas)==len(nn_distances)
-        maxD = max(nn_distances)
-        for l, f in zip(nn_distances, formulas):
-            print(f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}')
+        if self.name is None or self.name in names:
+            maxD = max(nn_distances)
+            for l, f in zip(nn_distances, formulas):
+                print(f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}')
+        else:
+            print(f'Skipping. Specified researcher name ({self.name}) not present in the data group ({names})')
 
