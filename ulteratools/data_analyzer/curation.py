@@ -15,6 +15,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+import xlsxwriter
+from io import BytesIO
+
 class Analyzer:
     def __init__(self, database, collection):
         with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
@@ -124,25 +127,33 @@ class SingleDOIAnalyzer(Analyzer):
             max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
 
     def analyze_compVecs_2DPCA(self, minDistance=0.001):
-        assert len(self.compVecs_2DPCA)>0
+        assert len(self.compVecs_2DPCA) > 0
         assert len(self.formulas) > 0
         assert len(self.fStrings) > 0
-        if self.compVecs_2DPCA_minRangeInDim>minDistance:
+        if self.compVecs_2DPCA_minRangeInDim > minDistance:
             fig = px.scatter(
                 x=self.compVecs_2DPCA[:, 0],
                 y=self.compVecs_2DPCA[:, 1],
-                color=self.formulas,
+                color=self.fStrings,
                 hover_name=self.fStrings,
                 color_discrete_sequence=px.colors.qualitative.Dark24,
-                width=700, height=400,
+                width=900, height=400,
+                title=f'<b>{self.doi}</b>  --> {", ".join(self.pointers)}<br>parsed by {", ".join(self.names)}',
                 labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported'},
                 template='plotly_white')
             fig.update_traces(
                 marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
-            img_bytes = fig.to_image(format="png")
+            self.compVecs_2DPCA_plot = BytesIO(fig.to_image(format="png", scale=5))
             fig.show()
-            return img_bytes
         else:
             print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
+
+    def writePlot(self, workbook: str, skipLines: int):
+        assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
+        workbook = xlsxwriter.Workbook('images_bytesio.xlsx')
+        worksheet = workbook.add_worksheet()
+        cellIndex = f'A{1+skipLines}'
+        worksheet.insert_image(cellIndex, self.doi, {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
+        workbook.close()
 
 
