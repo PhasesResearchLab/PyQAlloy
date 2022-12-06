@@ -131,7 +131,7 @@ class SingleDOIAnalyzer(Analyzer):
             max(self.compVecs_2DPCA[:, 0]) - min(self.compVecs_2DPCA[:, 0]),
             max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
 
-    def analyze_compVecs_2DPCA(self, minDistance=0.001):
+    def analyze_compVecs_2DPCA(self, minDistance=0.001, showFigure=True):
         assert len(self.compVecs_2DPCA) > 0
         assert len(self.formulas) > 0
         assert len(self.fStrings) > 0
@@ -149,7 +149,8 @@ class SingleDOIAnalyzer(Analyzer):
             fig.update_traces(
                 marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
             self.compVecs_2DPCA_plot = BytesIO(fig.to_image(format="png", scale=5))
-            fig.show()
+            if showFigure:
+                fig.show()
         else:
             print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
 
@@ -159,6 +160,22 @@ class SingleDOIAnalyzer(Analyzer):
         worksheet = workbook.add_worksheet()
         cellIndex = f'A{1+skipLines}'
         worksheet.insert_image(cellIndex, self.doi, {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
+        workbook.close()
+
+    def writeManyPlots(self, toPlotList: list, workbookPath: str):
+        workbook = xlsxwriter.Workbook(workbookPath)
+        worksheet = workbook.add_worksheet()
+        skipLines = 0
+
+        for tp in toPlotList:
+            cellIndex = f'A{1 + skipLines}'
+            if isinstance(tp, BytesIO):
+                worksheet.insert_image(cellIndex, self.doi,
+                                       {'image_data': tp, 'x_scale': 0.2, 'y_scale': 0.2})
+                skipLines += 21
+            elif isinstance(tp, str):
+                worksheet.write(cellIndex, tp)
+                skipLines += 1
         workbook.close()
 
 
