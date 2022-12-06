@@ -43,6 +43,11 @@ class SingleDOIAnalyzer(Analyzer):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.doi = doi
+        self.resetVariables()
+
+        print(f'********  Analyzer Initialized  ********')
+
+    def resetVariables(self):
         self.pointers = set()
         self.formulas = list()
         self.nn_distances = list()
@@ -56,11 +61,9 @@ class SingleDOIAnalyzer(Analyzer):
         self.compVecs_2DPCA_plot = None
         self.compVecs_2DPCA_minRangeInDim = None
 
-        print(f'********  Analyzer Initialized  ********')
-
-
     def setDOI(self, doi: str):
         self.doi = doi
+        self.resetVariables()
 
     def setName(self, name):
         self.name = name
