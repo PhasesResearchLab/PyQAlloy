@@ -5,7 +5,7 @@ from ulteratools.data_analyzer import curation
 class TestADA(unittest.TestCase):
 
     def setUp(self) -> None:
-        doi = '10.3390/met9010076'
+        doi = '10.1016/j.jallcom.2008.11.059'
         self.sDOI = curation.SingleDOIAnalyzer(doi=doi)
         pass
 
@@ -22,7 +22,7 @@ class TestADA(unittest.TestCase):
             self.sDOI.print_nnDistances()
 
         with self.subTest(msg='Test Name Selection. - filled'):
-            self.sDOI.setName('Marcia Ahn')
+            self.sDOI.setName('Adam Krajewski')
             self.sDOI.analyze_nnDistances()
             self.sDOI.print_nnDistances()
 
