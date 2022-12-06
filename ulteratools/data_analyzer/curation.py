@@ -212,6 +212,7 @@ class SingleCompositionAnalyzer(Analyzer):
                         printOut += f"  --> {e['reference']['pointer']}"
                     printOut += f"\nF:   {f}\n"
                     printOut += f"PF:  {e['material']['percentileFormula']}\n"
+                    printOut += f"Raw:  {e['material']['rawFormula']}\n"
                     printOut += f"RF:  {e['material']['relationalFormula']}\n"
                     printOut += str(fracs)
                     printOut += f'\n-->  {fracsSum}\n'
