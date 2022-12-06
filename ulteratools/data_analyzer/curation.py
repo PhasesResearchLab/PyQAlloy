@@ -148,12 +148,61 @@ class SingleDOIAnalyzer(Analyzer):
         else:
             print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
 
-    def writePlot(self, workbook: str, skipLines: int):
+    def writePlot(self, workbookPath: str, skipLines: int):
         assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
-        workbook = xlsxwriter.Workbook('images_bytesio.xlsx')
+        workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
         cellIndex = f'A{1+skipLines}'
         worksheet.insert_image(cellIndex, self.doi, {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
         workbook.close()
 
 
+class SingleCompositionAnalyzer(Analyzer):
+
+    def __init__(self, name=None, database='ULTERA', collection='CURATED'):
+        super().__init__(database=database, collection=collection)
+        self.name = name
+        self.formulas = set()
+        self.printOuts = list()
+
+    def scanCompositionsAround100(self,
+                                  lowerBound=80,
+                                  uncertainty=0.21,
+                                  upperBound=120,
+                                  queryLimit=10000,
+                                  resultLimit=1000,
+                                  printOnFly=False):
+
+        query = {'reference.doi': {'$ne': None}}
+        if self.name is not None:
+            query.update({'meta.name': self.name})
+        for e in self.collection.find(query, limit=queryLimit):
+            f = e['material']['formula']
+            if f not in self.formulas:
+                self.formulas.add(f)
+                c = Composition(f)
+                fracs = list(c.get_el_amt_dict().values())
+                fracsSum = round(sum(fracs), 3)
+
+                def printAlloy(self):
+                    printOut =  f"DOI: {e['reference']['doi']}\n"
+                    printOut += f"F:   {f}\n"
+                    printOut += f"PF:  {e['material']['percentileFormula']}\n"
+                    printOut += f"RF:  {e['material']['relationalFormula']}\n"
+                    printOut += str(fracs)
+                    printOut += f'\n-->  {fracsSum}\n'
+                    self.printOuts.append(printOut)
+                    if printOnFly:
+                        print(printOut)
+
+                if fracsSum>lowerBound and fracsSum<(100-uncertainty):
+                    printAlloy(self)
+                elif fracsSum>lowerBound/100 and fracsSum<(100-uncertainty)/100:
+                    printAlloy(self)
+                elif fracsSum<upperBound and fracsSum>(100+uncertainty):
+                    printAlloy(self)
+                elif fracsSum<upperBound/100 and fracsSum>(100+uncertainty)/100:
+                    printAlloy(self)
+
+            if len(self.printOuts)>resultLimit:
+                break
