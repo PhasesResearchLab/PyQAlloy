@@ -12,4 +12,8 @@ class TestSCADA(unittest.TestCase):
         self.sC.scanCompositionsAround100(queryLimit=10, printOnFly=True)
 
     def test_Scan2(self):
-        self.sC.scanCompositionsAround100(resultLimit=10, printOnFly=True)
+        with self.subTest(msg='Scan'):
+            self.sC.scanCompositionsAround100(resultLimit=10, printOnFly=True)
+
+        with self.subTest(msg='Write Results'):
+            self.sC.writeResultsToFile('testResults.txt')
