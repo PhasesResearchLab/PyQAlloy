@@ -11,6 +11,8 @@ from sklearn.cluster import DBSCAN
 from scipy.spatial import distance_matrix
 from statistics import mean
 
+from datetime import datetime
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
@@ -185,8 +187,10 @@ class SingleCompositionAnalyzer(Analyzer):
                 fracsSum = round(sum(fracs), 3)
 
                 def printAlloy(self):
-                    printOut =  f"DOI: {e['reference']['doi']}\n"
-                    printOut += f"F:   {f}\n"
+                    printOut =  f"DOI: {e['reference']['doi']}"
+                    if 'pointer' in e['reference']:
+                        printOut += f"  --> {e['reference']['pointer']}"
+                    printOut += f"\nF:   {f}\n"
                     printOut += f"PF:  {e['material']['percentileFormula']}\n"
                     printOut += f"RF:  {e['material']['relationalFormula']}\n"
                     printOut += str(fracs)
@@ -206,3 +210,12 @@ class SingleCompositionAnalyzer(Analyzer):
 
             if len(self.printOuts)>resultLimit:
                 break
+
+    def writeResultsToFile(self, fileName: str):
+        assert len(self.printOuts)>0
+        with open(fileName, 'w+') as f:
+            f.write(datetime.now().strftime("%c"))
+            f.write('\n')
+            for printOut in self.printOuts:
+                f.write(printOut)
+                f.write('\n')
