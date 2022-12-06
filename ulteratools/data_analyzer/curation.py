@@ -38,6 +38,7 @@ class SingleDOIAnalyzer(Analyzer):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.doi = doi
+        self.pointers = set()
         self.formulas = list()
         self.nn_distances = list()
         self.names = set()
@@ -47,6 +48,7 @@ class SingleDOIAnalyzer(Analyzer):
         self.printLog = str()
 
         self.compVecs_2DPCA = list()
+        self.compVecs_2DPCA_plot = None
         self.compVecs_2DPCA_minRangeInDim = None
 
         print(f'********  Analyzer Initialized  ********')
@@ -70,10 +72,12 @@ class SingleDOIAnalyzer(Analyzer):
                 self.names.add(e['meta']['name'])
                 self.els.update(list(c.get_el_amt_dict().keys()))
                 self.fStrings.append(
-                    e['material']['formula']#+'<br>'+
+                    e['material']['percentileFormula']#+'<br>'+
                     #e['material']['percentileFormula']+'<br>'+
                     #e['material']['relationalFormula']
                     )
+            if 'pointer' in e['reference']:
+                self.pointers.add(e['reference']['pointer'])
         # Vectorize based on a list of elements
         self.els = list(self.els)
         for f in self.formulas:
@@ -135,7 +139,9 @@ class SingleDOIAnalyzer(Analyzer):
                 template='plotly_white')
             fig.update_traces(
                 marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
+            img_bytes = fig.to_image(format="png")
             fig.show()
+            return img_bytes
         else:
             print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
 
