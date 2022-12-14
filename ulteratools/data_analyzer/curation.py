@@ -39,7 +39,7 @@ class Analyzer:
 
 class SingleDOIAnalyzer(Analyzer):
 
-    def __init__(self, doi=None, name=None, database='ULTERA', collection='CURATED'):
+    def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022'):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.doi = doi
@@ -181,7 +181,7 @@ class SingleDOIAnalyzer(Analyzer):
 
 class SingleCompositionAnalyzer(Analyzer):
 
-    def __init__(self, name=None, database='ULTERA', collection='CURATED'):
+    def __init__(self, name=None, database='ULTERA_internal', collection='CURATED_Dec2022'):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.formulas = set()
