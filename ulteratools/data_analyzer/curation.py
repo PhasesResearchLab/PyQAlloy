@@ -135,24 +135,28 @@ class SingleDOIAnalyzer(Analyzer):
         assert len(self.compVecs_2DPCA) > 0
         assert len(self.formulas) > 0
         assert len(self.fStrings) > 0
-        if self.compVecs_2DPCA_minRangeInDim > minDistance:
-            fig = px.scatter(
-                x=self.compVecs_2DPCA[:, 0],
-                y=self.compVecs_2DPCA[:, 1],
-                color=self.fStrings,
-                hover_name=self.fStrings,
-                color_discrete_sequence=px.colors.qualitative.Dark24,
-                width=900, height=400,
-                title=f'<b>{self.doi}</b>  --> {", ".join(self.pointers)}<br>parsed by {", ".join(self.names)}',
-                labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported'},
-                template='plotly_white')
-            fig.update_traces(
-                marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
-            self.compVecs_2DPCA_plot = BytesIO(fig.to_image(format="png", scale=5))
-            if showFigure:
-                fig.show()
+        if self.name is None or self.name in self.names:
+            if self.compVecs_2DPCA_minRangeInDim > minDistance:
+                fig = px.scatter(
+                    x=self.compVecs_2DPCA[:, 0],
+                    y=self.compVecs_2DPCA[:, 1],
+                    color=self.fStrings,
+                    hover_name=self.fStrings,
+                    color_discrete_sequence=px.colors.qualitative.Dark24,
+                    width=900, height=400,
+                    title=f'<b>{self.doi}</b>  --> {", ".join(self.pointers)}<br>parsed by {", ".join(self.names)}',
+                    labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported'},
+                    template='plotly_white')
+                fig.update_traces(
+                    marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
+                self.compVecs_2DPCA_plot = BytesIO(fig.to_image(format="png", scale=5))
+                if showFigure:
+                    fig.show()
+                return self.compVecs_2DPCA_plot
+            else:
+                return f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
         else:
-            print(f'Skipping {self.doi:<20} Nearly 1D linear trand detected.')
+            return f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
 
     def writePlot(self, workbookPath: str, skipLines: int):
         assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
