@@ -37,7 +37,7 @@ class Analyzer:
         with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
-                                   f"@testcluster.g3kud.mongodb.net/ULTREA_materials?retryWrites=true&w=majority"
+                                   f"@{self.credentials['dataServer']}"
         self.ultera_client = MongoClient(self.ultera_database_uri)
         self.collection = self.ultera_client[database][collection]
         print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
