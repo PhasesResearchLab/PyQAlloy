@@ -1,6 +1,6 @@
 import unittest
 
-from ulteratools.data_analyzer import curation
+from pyqalloy.data_analyzer import curation
 
 class TestSCADA(unittest.TestCase):
 

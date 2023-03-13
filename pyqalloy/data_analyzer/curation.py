@@ -22,7 +22,7 @@ from io import BytesIO
 
 class Analyzer:
     def __init__(self, database, collection):
-        with resources.files('ulteratools').joinpath('credentials.json').open('r') as f:
+        with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
                                    f"@testcluster.g3kud.mongodb.net/ULTREA_materials?retryWrites=true&w=majority"
