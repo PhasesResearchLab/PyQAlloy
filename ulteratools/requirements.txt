@@ -1,7 +1,0 @@
-pymongo
-pymatgen
-sklearn
-scipy
-seaborn
-plotly
-xlsxwriter
