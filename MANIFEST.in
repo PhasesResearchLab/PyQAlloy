@@ -1,0 +1,5 @@
+recursive-include ulteratools/tests *
+
+prune examples
+prune localResults
+prune docs
