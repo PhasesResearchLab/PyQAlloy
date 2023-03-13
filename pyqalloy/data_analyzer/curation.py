@@ -52,7 +52,16 @@ class Analyzer:
             {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
 class SingleDOIAnalyzer(Analyzer):
+    '''Extends the Analyzer class. It is used to asses the data coming from a single publication based on the DOI string.
 
+    Args:
+        doi: DOI string of the publication to analyze. Defaults to None.
+        name: Name of the researcher who uploaded the data. Allows liimiting the analysis to what a person was responsible
+            for. Defaults to None.
+        database: Name of the database to connect to. Defaults to 'ULTERA_internal'.
+        collection: Name of the collection to connect to. Defaults to 'CURATED_Dec2022'.
+
+    '''
     def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022'):
         super().__init__(database=database, collection=collection)
         self.name = name
@@ -61,7 +70,9 @@ class SingleDOIAnalyzer(Analyzer):
 
         print(f'********  Analyzer Initialized  ********')
 
-    def resetVariables(self):
+    def resetVariables(self) -> None:
+        '''Resets all variables to their default values. This is useful when switching between different publications.
+        without having to reinitialize the class and connect to the database again.'''
         self.pointers = set()
         self.formulas = list()
         self.nn_distances = list()
@@ -75,14 +86,22 @@ class SingleDOIAnalyzer(Analyzer):
         self.compVecs_2DPCA_plot = None
         self.compVecs_2DPCA_minRangeInDim = None
 
-    def setDOI(self, doi: str):
+    def setDOI(self, doi: str) -> None:
+        '''Sets the DOI of the publication to analyze. Resets all variables to their default values.'''
         self.doi = doi
         self.resetVariables()
 
-    def setName(self, name):
+    def setName(self, name: str) -> None:
+        '''Sets the name of the researcher analysis is limited to.'''
         self.name = name
 
-    def getCompVecs(self):
+    def getCompVecs(self) -> List[List[float]]:
+        '''Returns a list of composition vectors for all unique formulas in the publication. The composition vectors are
+        normalized to sum to 1.0.
+
+        Returns:
+            List of composition vectors in order determined by the database read.
+        '''
         # Reset formulas, els, etc
         self.formulas, self.els, self.names, self.compVecs, self.fStrings = list(), set(), set(), list(), list()
         # Find a set of unique formulas from DOI and a set of all elements present in them
@@ -106,13 +125,25 @@ class SingleDOIAnalyzer(Analyzer):
             cd = dict(Composition(f).fractional_composition.get_el_amt_dict())
             compVec = [cd[el] if el in cd else 0 for el in self.els]
             self.compVecs.append(compVec)
+        return self.compVecs
 
-    def analyze_nnDistances(self):
+    def analyze_nnDistances(self) -> None:
+        '''Calculates the nearest neighbor distances for all unique composition vectors in the publication. The distances
+        are calculated using the L1 metric and the k-d tree algorithm.'''
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
         self.getCompVecs()
         self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
 
-    def print_nnDistances(self, minSamples=2, printOut=True):
+    def print_nnDistances(self, minSamples: int=2, printOut: bool=True) -> None:
+        '''Prints the nearest neighbor distances for all unique composition vectors in the publication. The distances
+        are calculated using the L1 metric and the k-d tree algorithm. The distances are normalized to the maximum
+        distance in the publication. The output is persisted in the self.printLog variable.
+
+        Args:
+            minSamples: Minimum number of samples required to print the results. Defaults to 2.
+            printOut: If True, the results are printed to the console. Defaults to True.
+
+        '''
         assert len(self.compVecs)>0
         assert len(self.nn_distances)>0
         assert len(self.formulas)==len(self.nn_distances)
@@ -138,6 +169,13 @@ class SingleDOIAnalyzer(Analyzer):
                 print(temp_message)
 
     def get_compVecs_2DPCA(self):
+        '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
+        The minimum range in both dimensions is stored in the self.compVecs_2DPCA_minRangeInDim variable.
+
+        Returns:
+            List of 2D PCA coordinates for all composition vectors.
+
+        '''
         assert len(self.compVecs)>0
         pca = PCA(n_components=2)
         self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
@@ -145,7 +183,24 @@ class SingleDOIAnalyzer(Analyzer):
             max(self.compVecs_2DPCA[:, 0]) - min(self.compVecs_2DPCA[:, 0]),
             max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
 
-    def analyze_compVecs_2DPCA(self, minDistance=0.001, showFigure=True):
+        return self.compVecs_2DPCA
+
+    def analyze_compVecs_2DPCA(self, minDistance: float=0.001, showFigure: bool=True) -> Union[str, BytesIO]:
+        '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
+        The minimum range in both dimensions is stored in the self.compVecs_2DPCA_minRangeInDim variable.
+        The results are plotted using plotly. The figure is stored in the self.fig variable.
+
+        Args:
+            minDistance: Minimum distance between two points in the 2D PCA space in any dimension to be considered
+                as non-linear. Defaults to 0.001.
+            showFigure: If True, the figure is displayed. Defaults to True.
+
+        Returns:
+            String if specified researcher is not present in the group from the publication. String if a linear trend
+            is detected. Figure in BytesIO format if name is matched and non-linear trends are detected.
+
+        '''
+
         assert len(self.compVecs_2DPCA) > 0
         assert len(self.formulas) > 0
         assert len(self.fStrings) > 0
@@ -172,7 +227,14 @@ class SingleDOIAnalyzer(Analyzer):
         else:
             return f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
 
-    def writePlot(self, workbookPath: str, skipLines: int):
+    def writePlot(self, workbookPath: str, skipLines: int) -> None:
+        '''Writes the plot to the specified report Excel workbook.
+
+        Args:
+            workbookPath: Path to the report Excel workbook. Must be a .xlsx file and must not be open at the time of writing.
+            skipLines: Number of lines to skip before writing the plot. It is critical to skip lines to avoid overwriting
+                existing data in the workbook.
+        '''
         assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
         workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
@@ -180,7 +242,16 @@ class SingleDOIAnalyzer(Analyzer):
         worksheet.insert_image(cellIndex, self.doi, {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
         workbook.close()
 
-    def writeManyPlots(self, toPlotList: list, workbookPath: str):
+    def writeManyPlots(self, toPlotList: list, workbookPath: str) -> None:
+        '''Writes the plots to the specified report Excel workbook.
+
+        Args:
+            toPlotList: List of plots to write. Each element of the list can be either a BytesIO object containing the plot
+                or a string containing the text to write if no plot is available because of a linear trend in the data or
+                because the specified researcher is not present in the group reporting the data.
+            workbookPath: Path to the report Excel workbook. Must be a .xlsx file and must not be open at the time of writing.
+        '''
+
         workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
         skipLines = 0
