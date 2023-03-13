@@ -269,20 +269,42 @@ class SingleDOIAnalyzer(Analyzer):
 
 
 class SingleCompositionAnalyzer(Analyzer):
+    '''Class to analyze a single composition in the context of abnormal data detection.
 
-    def __init__(self, name=None, database='ULTERA_internal', collection='CURATED_Dec2022'):
+    Args:
+        name: Name of the researcher to limit the search to. Defaults to None.
+        database: Name of the database to use. Defaults to 'ULTERA_internal'.
+        collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
+    '''
+
+    def __init__(self, name: str=None, database: str='ULTERA_internal', collection: str='CURATED_Dec2022'):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.formulas = set()
         self.printOuts = list()
 
     def scanCompositionsAround100(self,
-                                  lowerBound=80,
-                                  uncertainty=0.21,
-                                  upperBound=120,
-                                  queryLimit=10000,
-                                  resultLimit=1000,
-                                  printOnFly=False):
+                                  lowerBound: float=80,
+                                  uncertainty: float=0.21,
+                                  upperBound: float=120,
+                                  queryLimit: int=10000,
+                                  resultLimit: int=1000,
+                                  printOnFly: bool=False) -> None:
+        '''Scans the database for compositions around 100% but not exactly 100% as defined by the lower and upper bounds.
+        Results are stored in self.printOuts and can be printed out or written to a file using self.writeResultsToFile().
+
+        Args:
+            lowerBound: Lower bound for the sum of composition to be considered around 100%. Expressed as percentage.
+                Defaults to 80 meaning 80%.
+            upperBound: Upper bound for the sum of composition to be considered around 100%. Expressed as percentage.
+                Defaults to 120 meaning 120%.
+            uncertainty: Allowed deviation from 100% for the sum of composition. Expressed as percentage.
+                Defaults to 0.21 meaning 0.21%.
+            queryLimit: Maximum number of documents to query from the database collection. Defaults to 10000.
+            resultLimit: Maximum number of results to investigate. Defaults to 1000.
+            printOnFly: If True, prints the results out into console on the fly as they are found. Defaults to False.
+
+        '''
 
         query = {'reference.doi': {'$ne': None}}
         if self.name is not None:
@@ -321,7 +343,12 @@ class SingleCompositionAnalyzer(Analyzer):
             if len(self.printOuts)>resultLimit:
                 break
 
-    def writeResultsToFile(self, fileName: str):
+    def writeResultsToFile(self, fileName: str) -> None:
+        '''Writes the results to a file. The file is created if it does not exist, otherwise it is overwritten.
+
+        Args:
+            fileName: Name of the file to write the results to.
+        '''
         assert len(self.printOuts)>0
         with open(fileName, 'w+') as f:
             f.write(datetime.now().strftime("%c"))
