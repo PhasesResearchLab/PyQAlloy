@@ -19,9 +19,21 @@ import plotly.express as px
 
 import xlsxwriter
 from io import BytesIO
+from typing import List, Dict, Tuple, Union
 
 class Analyzer:
-    def __init__(self, database, collection):
+    '''Base class for all analyzers. Initializes a connection to the database and collection. Also contains some helper
+    functions for data analysis, such as getting a list of all unique DOIs in the collection.
+
+    Args:
+        database: Name of the database to connect to.
+        collection: Name of the collection to connect to.
+
+    Note:
+        The credentials for the database are stored in the credentials.json file in the pyqalloy package. This access
+        credentials are not included in the public repository.
+    '''
+    def __init__(self, database: str, collection: str):
         with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
             self.credentials = json.load(f)
         self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
@@ -31,7 +43,9 @@ class Analyzer:
         print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
               f'points detected.')
 
-    def get_allDOIs(self):
+    def get_allDOIs(self) -> List[str]:
+        '''Returns a list of all unique DOIs in the collection. This is useful for iterating over all publications in the
+        collection.'''
         return [e['doi'] for e in self.collection.aggregate([
             {'$match': {'reference.doi': {'$ne': None}}},
             {'$group': {'_id': '$reference.doi'}},
