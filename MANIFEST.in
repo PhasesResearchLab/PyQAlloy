@@ -1,5 +1,5 @@
-recursive-include ulteratools/tests *
+recursive-include pyqalloy/tests/*
+exclude pyqalloy/credentials.json
 
 prune examples
-prune localResults
 prune docs
