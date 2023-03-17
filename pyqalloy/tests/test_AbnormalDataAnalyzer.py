@@ -46,6 +46,12 @@ class TestADA(unittest.TestCase):
         with self.subTest(msg='Analyze the Found PCA'):
             self.sDOI.analyze_compVecs_2DPCA(showFigure=False)
 
+        with self.subTest(msg='Write Plots - wrong name test'):
+            self.sDOI.setName('Researcher 934ocfhxm834xfb')
+            retunValue = self.sDOI.analyze_compVecs_2DPCA(showFigure=False)
+            assert 'not present in the group' in retunValue
+            self.sDOI.setName(None)
+
         with self.subTest(msg='Write Plots'):
             toPrintList = list()
             for doi in ['10.1016/j.jallcom.2008.11.059', '10.3390/met9010076', '10.1016/j.scriptamat.2018.10.023', '10.1007/978-1-4684-6066-7', '10.3390/e18050189']:
@@ -56,11 +62,13 @@ class TestADA(unittest.TestCase):
                     self.sDOI.analyze_compVecs_2DPCA(showFigure=False)
                     if self.sDOI.compVecs_2DPCA_plot is not None:
                         toPrintList.append(self.sDOI.compVecs_2DPCA_plot)
+                        self.sDOI.writePlot(workbookPath='testResultPCA_single.xlsx', skipLines=0)
                     else:
                         toPrintList.append(f'Skipping {doi:<30} Nearly 1D linear trand detected.')
                 else:
                     toPrintList.append(f'Skipping {doi:<30} Not enough data for PCA (N>=2).')
-            self.sDOI.writeManyPlots(toPlotList=toPrintList, workbookPath='testResultPCA.xlsx')
+
+            self.sDOI.writeManyPlots(toPlotList=toPrintList, workbookPath='testResultPCA_many.xlsx')
 
 if __name__ == '__main__':
     unittest.main()
