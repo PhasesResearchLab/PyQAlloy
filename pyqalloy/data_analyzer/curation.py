@@ -512,22 +512,33 @@ class AllDataAnalyzer(Analyzer):
 
     def findOutlierDataSources(self, filterByName: bool=False):
         assert len(self.outliers)>0
+        assert 'formula' in self.outliers[0]
 
         outlierSources = list()
-        for outlier in self.outliers:
-            for e in self.collection.find({'material.relationalFormula': outlier['formula']}):
-                if e['meta']['name'] == self.name:
-                    outlierSources.append(e)
-                    print(f'Outlier {outlier["formula"]} matched to {e["meta"]["name"]} upload from '
-                          f'{e["reference"]["doi"]}')
-                elif not filterByName:
-                    outlierSources.append(e)
-                    print(f'Outlier {outlier["formula"]} matched to {e["meta"]["name"]} upload from '
-                          f'{e["reference"]["doi"]}')
-                else:
-                    print(f'Outlier {outlier["formula"]} not matched to a data source from {self.name}. Check '
-                          'the name or set filterByName to False to see all matches.')
+        def printEntry(entry):
+            out = f'Outlier {outlier["formula"]:<25} | {entry["material"]["percentileFormula"]:<25} | {entry["material"]["rawFormula"]}\n'
+            out += f'matched to:  {entry["meta"]["name"]:<20} upload '
+            if 'doi' in entry['reference']:
+                out += f'from DOI {entry["reference"]["doi"]}'
+            if 'pointer' in entry['reference']:
+                out += f' at position {entry["reference"]["pointer"]}'
+            print(out,'\n')
 
-        print(f'Found {len(outlierSources)} outlier data sources from {self.name}.')
+        for outlier in self.outliers:
+            e = self.collection.find_one({'material.relationalFormula': outlier['formula']})
+            if e['meta']['name'] == self.name:
+                outlierSources.append(e)
+                printEntry(e)
+            elif not filterByName:
+                outlierSources.append(e)
+                printEntry(e)
+            else:
+                print(f'Outlier {outlier["formula"]} not matched to a data source from {self.name}. Check '
+                      'the name or set filterByName to False to see all matches.\n')
+
+        if self.name is not None:
+            print(f'Found {len(outlierSources)} outlier data sources from {self.name}.')
+        else:
+            print(f'Found {len(outlierSources)} outlier data sources from all uploaded data.')
 
         return outlierSources
