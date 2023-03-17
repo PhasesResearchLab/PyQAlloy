@@ -3,6 +3,8 @@ import json
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymatgen.core import Composition
+
+import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
@@ -356,3 +358,176 @@ class SingleCompositionAnalyzer(Analyzer):
             for printOut in self.printOuts:
                 f.write(printOut)
                 f.write('\n')
+
+class AllDataAnalyzer(Analyzer):
+    '''Class to analyze datapoints in the scope of the contents of entire database. It primarily relies on clustering
+    analysis to identify outliers and anomalies in a few different ways.
+    '''
+
+    def __init__(self, database: str='ULTERA_internal', collection: str='CURATED_Dec2022', name: str=None):
+        super().__init__(database=database, collection=collection)
+        self.name = name
+        self.outliers = list()
+        self.els = set()
+
+        self.allComps = self.updateAllComps(printOut=False, printOutMinimal=True)
+
+
+    def updateAllComps(self, printOut: bool=False, printOutMinimal: bool=True) -> list:
+        print('Updating the list of all unique composition points...')
+        formulas = set()
+        for e in self.collection.find({
+                'material.nComponents': {'$gte': 3},
+                'reference.doi': {'$ne': None}}):
+
+            rf = e['material']['relationalFormula']
+            c = Composition(rf)
+            formulas.add(rf)
+            self.els.update(list(c.get_el_amt_dict().keys()))
+
+        print(f'Number of unique formulas found: {len(formulas)}')
+        comps = list()
+
+        for f in formulas:
+            cd = dict(Composition(f).fractional_composition.get_el_amt_dict())
+            compVec = [cd[el] if el in cd else 0.0 for el in self.els]
+            comps.append({
+                'formula': f,
+                'compVec': compVec
+            })
+
+        if printOutMinimal:
+            print(f'Elements Found: {self.els}')
+        if printOut:
+            print(f'Formulas Found:\n{formulas}')
+
+        self.allComps = comps
+        print('Done!')
+
+        return comps
+
+    def getTSNE(self, perplexity: int=2, init: str='pca'):
+
+        tsne = TSNE(n_components=2, perplexity=perplexity, init=init)
+        X = np.array([c['compVec'] for c in self.allComps])
+        X_embedded = tsne.fit_transform(X)
+
+        for i, c in enumerate(self.allComps):
+            c['compVec_TSNE2D'] = X_embedded[i]
+
+        return X_embedded
+
+    def showTSNE(self):
+        assert len(self.allComps)>0
+        assert 'formula' in self.allComps[0]
+        assert 'compVec_TSNE2D' in self.allComps[0]
+        assert len(self.allComps[0]['compVec_TSNE2D'])==2
+
+        fig = px.scatter(x=[c['compVec_TSNE2D'][0] for c in self.allComps],
+                         y=[c['compVec_TSNE2D'][1] for c in self.allComps],
+                         hover_name=[c['formula'] for c in self.allComps],
+                         color_discrete_sequence=px.colors.qualitative.Dark24,
+                         labels={'x': f'{len(self.els)}D->2D TSNE1',
+                                 'y': f'{len(self.els)}D->2D TSNE2',
+                                 'color': f'Embedded Points'},
+                         template='plotly_white'
+                         )
+        fig.show()
+
+    def getDBSCAN(self, eps: float=0.3, min_samples: int=2, p: int=1):
+        assert len(self.allComps)>0
+        assert 'compVec' in self.allComps[0]
+
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples, p=p)
+        X = np.array([c['compVec'] for c in self.allComps])
+        dbscanClusters =  dbscan.fit_predict(X)
+
+        outlierN = 0
+        for i, c in enumerate(self.allComps):
+            c['dbscanCluster'] = dbscanClusters[i]
+            if dbscanClusters[i] == -1:
+                outlierN += 1
+
+        print(f'Found {len(set(dbscanClusters))} clusters and {outlierN} outliers.')
+        print(f'Outlier ratio: {round(outlierN/len(dbscanClusters)*100,1)}%')
+
+        return dbscanClusters, outlierN
+
+    def getDBSCANautoEpsilon(self, outlierTargetN: int=10):
+        assert len(self.allComps)>outlierTargetN
+        outliersFound = 0
+        eps = 1.00001
+        while outliersFound < outlierTargetN:
+            print(f'Running DBSCAN with eps={round(eps,3)}...')
+            _, outliersFound = self.getDBSCAN(eps=eps)
+            eps -= 0.025
+
+
+    def showClustersDBSCAN(self):
+        assert len(self.allComps)>0
+        assert 'formula' in self.allComps[0]
+        assert 'dbscanCluster' in self.allComps[0]
+        assert 'compVec_TSNE2D' in self.allComps[0]
+        assert len(self.allComps[0]['compVec_TSNE2D']) == 2
+
+        fig = px.scatter(x=[c['compVec_TSNE2D'][0] for c in self.allComps],
+                         y=[c['compVec_TSNE2D'][1] for c in self.allComps],
+                         color=[str(c['dbscanCluster']) for c in self.allComps],
+                         hover_name=[c['formula'] for c in self.allComps],
+                         color_discrete_sequence=px.colors.qualitative.Dark24,
+                         labels={'x': f'{len(self.els)}D->2D TSNE1',
+                                 'y': f'{len(self.els)}D->2D TSNE2',
+                                 'color': 'Cluster #'},
+                         template='plotly_white'
+                         )
+        fig.show()
+
+    def updateOutliersList(self):
+        assert len(self.allComps) > 0
+        assert 'formula' in self.allComps[0]
+        assert 'dbscanCluster' in self.allComps[0]
+        assert 'compVec_TSNE2D' in self.allComps[0]
+        assert len(self.allComps[0]['compVec_TSNE2D']) == 2
+
+        self.outliers = [c for c in self.allComps if c['dbscanCluster'] == -1]
+
+    def showOutliersDBSCAN(self):
+        assert len(self.allComps)>0
+        assert 'formula' in self.allComps[0]
+        assert 'dbscanCluster' in self.allComps[0]
+        assert 'compVec_TSNE2D' in self.allComps[0]
+        assert len(self.allComps[0]['compVec_TSNE2D']) == 2
+
+        fig = px.scatter(x=[c['compVec_TSNE2D'][0] for c in self.allComps],
+                         y=[c['compVec_TSNE2D'][1] for c in self.allComps],
+                         color=['outlier' if c['dbscanCluster']==-1 else 'clustered' for c in self.allComps],
+                         hover_name=[c['formula'] for c in self.allComps],
+                         color_discrete_sequence=px.colors.qualitative.Dark24,
+                         labels={'x': f'{len(self.els)}D->2D TSNE1',
+                                 'y': f'{len(self.els)}D->2D TSNE2',
+                                 'color': 'Classification'},
+                         template='plotly_white'
+                         )
+        fig.show()
+
+    def findOutlierDataSources(self, filterByName: bool=False):
+        assert len(self.outliers)>0
+
+        outlierSources = list()
+        for outlier in self.outliers:
+            for e in self.collection.find({'material.relationalFormula': outlier['formula']}):
+                if e['meta']['name'] == self.name:
+                    outlierSources.append(e)
+                    print(f'Outlier {outlier["formula"]} matched to {e["meta"]["name"]} upload from '
+                          f'{e["reference"]["doi"]}')
+                elif not filterByName:
+                    outlierSources.append(e)
+                    print(f'Outlier {outlier["formula"]} matched to {e["meta"]["name"]} upload from '
+                          f'{e["reference"]["doi"]}')
+                else:
+                    print(f'Outlier {outlier["formula"]} not matched to a data source from {self.name}. Check '
+                          'the name or set filterByName to False to see all matches.')
+
+        print(f'Found {len(outlierSources)} outlier data sources from {self.name}.')
+
+        return outlierSources
