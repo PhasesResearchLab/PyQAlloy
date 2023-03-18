@@ -455,12 +455,15 @@ class AllDataAnalyzer(Analyzer):
 
     def getDBSCANautoEpsilon(self, outlierTargetN: int=10):
         assert len(self.allComps)>outlierTargetN
-        outliersFound = 0
+        outlierN = 0
         eps = 1.00001
-        while outliersFound < outlierTargetN:
+        assert outlierTargetN > 0
+        while outlierN < outlierTargetN:
             print(f'Running DBSCAN with eps={round(eps,3)}...')
-            _, outliersFound = self.getDBSCAN(eps=eps)
+            dbscanClusters, outlierN = self.getDBSCAN(eps=eps)
             eps -= 0.025
+
+        return dbscanClusters, outlierN
 
 
     def showClustersDBSCAN(self):
