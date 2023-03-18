@@ -28,7 +28,7 @@ class TestAllDataContextULTERA(unittest.TestCase):
         with self.subTest(msg='Test if the TSNE embedding successfully prints out'):
             self.allD.showTSNE()
 
-    def testDBSCAN(self):
+    def testDBSCAN(self) -> None:
 
         with self.subTest(msg='DBSCAN default'):
             _, outlierN1 = self.allD.getDBSCAN(eps=0.05)
@@ -54,6 +54,16 @@ class TestAllDataContextULTERA(unittest.TestCase):
             else:
                 self.assertEqual(self.allD.outliers, [])
 
+    def testTSNEplusDBSCAN(self) -> None:
+        self.allD.getTSNE()
+        # Low epsilon for nicer visual effect only
+        self.allD.getDBSCAN(eps=0.05, min_samples=3)
+
+        with self.subTest(msg='Printing out a plot with clusters'):
+            self.allD.showClustersDBSCAN()
+
+        with self.subTest(msg='Printing out a plot with outliers'):
+            self.allD.updateOutliersList()
 
 
 
