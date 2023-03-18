@@ -30,24 +30,30 @@ class TestAllDataContextULTERA(unittest.TestCase):
 
     def testDBSCAN(self):
 
-        with self.subTest(msg='DBSCAN epsilon effect'):
-            _, outlierN1 = self.allD.getDBSCAN(eps=0.05)
-            _, outlierN2 = self.allD.getDBSCAN(eps=0.5)
-
-            self.assertGreater(outlierN1, outlierN2)
-
         with self.subTest(msg='DBSCAN default'):
-            _, outlierN3 = self.allD.getDBSCAN(eps=0.05)
+            _, outlierN1 = self.allD.getDBSCAN(eps=0.05)
 
             self.assertIn('dbscanCluster', self.allD.allComps[0])
+
+        with self.subTest(msg='DBSCAN epsilon effect'):
+            _, outlierN2 = self.allD.getDBSCAN(eps=0.05)
+            _, outlierN3 = self.allD.getDBSCAN(eps=0.5)
+
+            self.assertGreater(outlierN2, outlierN3)
+
+        with self.subTest(msg='Automatic epsilon adjustment to find at least 5 outliers'):
+            _, outlierN4 = self.allD.getDBSCANautoEpsilon(outlierTargetN=5)
+
+            self.assertGreater(outlierN4, 5)
 
         with self.subTest(msg='Update a list of outliers'):
             self.allD.updateOutliersList()
 
-            if outlierN3>0:
+            if outlierN4>0:
                 self.assertGreater(len(self.allD.outliers), 0)
             else:
                 self.assertEqual(self.allD.outliers, [])
+
 
 
 
