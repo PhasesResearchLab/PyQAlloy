@@ -28,6 +28,32 @@ class TestAllDataContextULTERA(unittest.TestCase):
         with self.subTest(msg='Test if the TSNE embedding successfully prints out'):
             self.allD.showTSNE()
 
+    def testDBSCAN(self):
+
+        with self.subTest(msg='DBSCAN epsilon effect'):
+            _, outlierN1 = self.allD.getDBSCAN(eps=0.05)
+            _, outlierN2 = self.allD.getDBSCAN(eps=0.5)
+
+            self.assertGreater(outlierN1, outlierN2)
+
+        with self.subTest(msg='DBSCAN default'):
+            _, outlierN3 = self.allD.getDBSCAN(eps=0.05)
+
+            self.assertIn('dbscanCluster', self.allD.allComps[0])
+
+        with self.subTest(msg='Update a list of outliers'):
+            self.allD.updateOutliersList()
+
+            if outlierN3>0:
+                self.assertGreater(len(self.allD.outliers), 0)
+            else:
+                self.assertEqual(self.allD.outliers, [])
+
+
+
+
+
+
 
 
 
