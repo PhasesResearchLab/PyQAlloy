@@ -489,8 +489,6 @@ class AllDataAnalyzer(Analyzer):
         assert len(self.allComps) > 0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
-        assert 'compVec_TSNE2D' in self.allComps[0]
-        assert len(self.allComps[0]['compVec_TSNE2D']) == 2
 
         self.outliers = [c for c in self.allComps if c['dbscanCluster'] == -1]
 
