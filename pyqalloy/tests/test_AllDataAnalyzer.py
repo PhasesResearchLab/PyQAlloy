@@ -49,10 +49,17 @@ class TestAllDataContextULTERA(unittest.TestCase):
         with self.subTest(msg='Update a list of outliers'):
             self.allD.updateOutliersList()
 
-            if outlierN4>0:
-                self.assertGreater(len(self.allD.outliers), 0)
-            else:
-                self.assertEqual(self.allD.outliers, [])
+            self.assertGreater(len(self.allD.outliers), 0)
+            self.assertIn('formula', self.allD.outliers[0])
+            self.assertIn('compVec', self.allD.outliers[0])
+
+
+        with self.subTest(msg='Retrieve information on where the outlier data came from - no name filter'):
+            self.allD.findOutlierDataSources(filterByName=False)
+
+
+
+
 
     def testTSNEplusDBSCAN(self) -> None:
         self.allD.getTSNE()
