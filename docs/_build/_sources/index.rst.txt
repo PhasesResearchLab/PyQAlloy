@@ -34,6 +34,10 @@ concentrated solutions, i.e. High Entropy Alloys (HEAs) / Multi
 Principle Element Alloys (MPEAs) / Concentrated Complex Alloys (CCAs) to
 more traditional alloys such as steels, nickel-based superalloys, etc.
 
+.. image:: assets/AbnormalCompositionDetection_v1.png
+    :width: 300pt
+    :alt: schematic
+    :align: center
 
 .. note::
    This project is under active development. We recommend using released (stable) versions.
