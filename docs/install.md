@@ -1,5 +1,6 @@
 # Install pySIPFENN
 
+## From GitHub
 At the moment, PyQAlloy is not available on PyPI, so you need to clone the repository and install
 it in editable mode. While not required, it is recommended to first set up a virtual environment using venv or Conda. 
 This ensures that one of the required versions of Python (3.9+) is used and there are no dependency conflicts. 
@@ -22,6 +23,18 @@ Then, move to the PyQAlloy folder and install in editable (`-e`) mode.
     cd PyQAlloy
     pip install -e .
 
+## From TAR.GZ
+
+If you have downloaded a TAR.GZ file, you should follow instructions above,
+setting up the Conda environment, but instead of cloning from GitHub, 
+you can quickly install it with
+
+    pip install <path_to_tar.gz>
+
+The resulting installation will be the same as if you installed a package from 
+PyPI, but you will not be able to make changes to the code.
+
+## Dataset connection
 If you are using the [**ULTERA Project**](https://ultera.org) infrastructure, now you should fill in your details into the 
 `pyqalloy/credentials.json` 'name' and 'dbKey' fields, and you should be ready to go! :)
 

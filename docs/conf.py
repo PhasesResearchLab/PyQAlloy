@@ -24,6 +24,7 @@ extensions = ['sphinx.ext.linkcode',
 # Jupyter Notebook configuration
 nb_execution_mode = "off"
 nb_execution_cache_path = "../temp/jupyter_cache"
+nb_execution_timeout = 1200
 
 # Changelog configuration
 #sphinx_github_changelog_token = password = os.environ.get("sphinx_github_changelog_token")
