@@ -362,6 +362,18 @@ class SingleCompositionAnalyzer(Analyzer):
 class AllDataAnalyzer(Analyzer):
     '''Class to analyze datapoints in the scope of the contents of entire database. It primarily relies on clustering
     analysis to identify outliers and anomalies in a few different ways.
+
+    Args:
+        database: Name of the database to use. Defaults to 'ULTERA_internal'.
+        collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
+        name: Name of the researcher to limit the search to. Defaults to None.
+
+    Properties:
+        allComps: List of all unique compositions in the database. It is automatically updated when the class is
+            initialized.
+        els: Set of all unique elements in the database. It is automatically updated when the class is initialized and
+            it is used to determine common ordering of elements across methods.
+        outliers: List of outliers in the database identified by the last used method (e.g. DBSCAN).
     '''
 
     def __init__(self, database: str='ULTERA_internal', collection: str='CURATED_Dec2022', name: str=None):
@@ -374,6 +386,20 @@ class AllDataAnalyzer(Analyzer):
 
 
     def updateAllComps(self, printOut: bool=False, printOutMinimal: bool=True) -> list:
+        '''Idenitfies a list of all unique compositions in the database, updates the self.els property, and then converts
+        the list of compositions into a list of dictionaries with the formula and a vector representation of the composition
+        in the order of self.els. The vector representation is used for full-dimensional clustering analysis. Some other methods
+        like TSNE enbedding will update these dictionaries with additional keys.
+
+        Args:
+            printOut: If True, prints out the list of all unique compositions. Defaults to False.
+            printOutMinimal: If True, prints out the number of unique compositions and the list of unique elements. Defaults
+                to True.
+
+        Returns:
+            List of dictionaries with the formula and a vector representation of the composition in the order of self.els.
+        '''
+
         print('Updating the list of all unique composition points...')
         formulas = set()
         for e in self.collection.find({
@@ -406,7 +432,22 @@ class AllDataAnalyzer(Analyzer):
 
         return comps
 
-    def getTSNE(self, perplexity: int=2, init: str='pca'):
+    def getTSNE(self, perplexity: int=2, init: str='pca') -> np.ndarray:
+        '''Performs TSNE embedding on the list of compositions in self.allComps. The TSNE embedding is stored in the
+        'compVec_TSNE2D' key of each dictionary in self.allComps. The TSNE embedding is also returned as a numpy array.
+
+        Args:
+            perplexity: Perplexity parameter for the TSNE embedding. Defaults to 2. This is the parameter that controls
+                the number of alloys that are expected to be close to each other in the embedding. The value of 2 is
+                chosen for visualizing outlier detection becuase the database is very sparse, populated by chains of
+                neighboring alloys, and we do expect many without more than one neighbor. For more general use, the
+                default value of 5-10 is recommended. The value of 30, often used in the literature, is not recommended
+                for HEA datasets.
+            init: Initialization method for the TSNE embedding. Defaults to 'pca'. The default value is recommended.
+
+        Returns:
+            Numpy array of the TSNE embedding.
+        '''
 
         tsne = TSNE(n_components=2, perplexity=perplexity, init=init)
         X = np.array([c['compVec'] for c in self.allComps])
@@ -418,6 +459,12 @@ class AllDataAnalyzer(Analyzer):
         return X_embedded
 
     def showTSNE(self):
+        '''Plots the TSNE embedding of the compositions in self.allComps. The plot is interactive and allows for
+        hovering over the points to see the formula of the alloy.
+
+        Returns:
+            None
+        '''
         assert len(self.allComps)>0
         assert 'formula' in self.allComps[0]
         assert 'compVec_TSNE2D' in self.allComps[0]
@@ -434,7 +481,28 @@ class AllDataAnalyzer(Analyzer):
                          )
         fig.show()
 
-    def getDBSCAN(self, eps: float=0.3, min_samples: int=2, p: int=1):
+    def getDBSCAN(self, eps: float=0.3, min_samples: int=2, p: int=1) -> Tuple[np.ndarray, int]:
+        '''Performs DBSCAN clustering on the list of compositions in self.allComps. The DBSCAN clustering is stored in the
+        'dbscanCluster' key of each dictionary in self.allComps. The DBSCAN clustering is also returned as a numpy array
+        along with the number of outliers identified.
+
+        Args:
+            eps: Epsilon parameter for the DBSCAN clustering. Defaults to 0.3. This is the parameter that controls the
+                maximum distance between two points to be considered neighbors. With all other parameters at their
+                default values, this 0.3 value corresponds to a 30% atomic fraction difference by summing over differences
+                in all elements fractions. For example, for Fe0.5Ni0.5, up to Fe0.35Ni0.65 or Fe0.65Ni0.35 would be
+                considered neighbors.
+            min_samples: Minimum number of samples parameter for the DBSCAN clustering. Defaults to 2. This is the
+                parameter that controls the minimum number of neighbors required for a point to be considered a core
+                point. If it is not met, the point is considered an outlier and assigned to the -1 cluster.
+            p: p parameter for the DBSCAN clustering. Defaults to 1. This is the parameter that controls the metric used
+                to calculate the distance between two points. The default value of 1 corresponds to the Manhattan distance
+                with consequences described above for eps. The value of 2 would correspond to the Euclidean distance.
+
+        Returns:
+            Numpy array of the DBSCAN clustering and the number of outliers identified.
+        '''
+
         assert len(self.allComps)>0
         assert 'compVec' in self.allComps[0]
 
@@ -453,7 +521,19 @@ class AllDataAnalyzer(Analyzer):
 
         return dbscanClusters, outlierN
 
-    def getDBSCANautoEpsilon(self, outlierTargetN: int=10):
+    def getDBSCANautoEpsilon(self, outlierTargetN: int=10) -> Tuple[np.ndarray, int]:
+        '''Performs DBSCAN clustering using getDBSCAN() with a range of epsilon values until the desired minimum number
+        of outliers is found. It efficiently allows user to find as many outliers as they can investigate independently
+        of the number of alloys in the dataset. The DBSCAN clustering is stored in the 'dbscanCluster' key of each dictionary in
+        self.allComps. The DBSCAN clustering is also returned as a numpy array along with the number of outliers
+        identified.
+
+        Args:
+            outlierTargetN: Minimum number of outliers to be identified. Defaults to 10.
+
+        Returns:
+            Numpy array of the DBSCAN clustering and the number of outliers identified.
+        '''
         assert len(self.allComps)>outlierTargetN
         outlierN = 0
         eps = 1.00001
@@ -467,6 +547,13 @@ class AllDataAnalyzer(Analyzer):
 
 
     def showClustersDBSCAN(self):
+        '''Plots the TSNE embedding of the compositions in self.allComps colored by the DBSCAN clustering. The plot is
+        interactive and allows for hovering over the points to see the formula of the alloy as well as the DBSCAN
+        cluster number.
+
+        Returns:
+            None
+        '''
         assert len(self.allComps)>0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
@@ -485,14 +572,26 @@ class AllDataAnalyzer(Analyzer):
                          )
         fig.show()
 
-    def updateOutliersList(self):
+    def updateOutliersList(self) -> None:
+        '''Updates the list of outliers in self.outliers. This list is used by the showOutliersDBSCAN() method.
+
+        Returns:
+            None
+        '''
         assert len(self.allComps) > 0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
 
         self.outliers = [c for c in self.allComps if c['dbscanCluster'] == -1]
 
-    def showOutliersDBSCAN(self):
+    def showOutliersDBSCAN(self) -> None:
+        '''Plots the TSNE embedding of the compositions in self.allComps colored by the DBSCAN clustering. The plot is
+        interactive and allows for hovering over the points to see the formula of the alloy as well as the DBSCAN
+        cluster number. Outliers are colored in red.
+
+        Returns:
+            None
+        '''
         assert len(self.allComps)>0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
@@ -511,7 +610,18 @@ class AllDataAnalyzer(Analyzer):
                          )
         fig.show()
 
-    def findOutlierDataSources(self, filterByName: bool=False):
+    def findOutlierDataSources(self, filterByName: bool=False) -> list:
+        '''Finds the data sources for the outliers identified by DBSCAN. If filterByName is True, only data sources
+        with the same name as the current analyzer name setting will be printed. Otherwise, all data sources will be
+        printed.
+
+        Args:
+            filterByName: If True, only data sources with the same name as the current analyzer name setting will be printed.
+                Defaults to False.
+
+        Returns:
+            List of dictionaries containing the data sources for the outliers.
+        '''
         assert len(self.outliers)>0
         assert 'formula' in self.outliers[0]
 
