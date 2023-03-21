@@ -1,4 +1,4 @@
-# Install pySIPFENN
+# Install PyQAlloy
 
 ## From GitHub
 At the moment, PyQAlloy is not available on PyPI, so you need to clone the repository and install
