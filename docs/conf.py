@@ -27,7 +27,7 @@ nb_execution_cache_path = "../temp/jupyter_cache"
 nb_execution_timeout = 1200
 
 # Changelog configuration
-#sphinx_github_changelog_token = password = os.environ.get("sphinx_github_changelog_token")
+sphinx_github_changelog_token = password = os.environ.get("sphinx_github_changelog_token")
 
 # -- Options for autodoc -----------------------------------------------------
 templates_path = ['_templates']
