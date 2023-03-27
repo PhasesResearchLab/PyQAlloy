@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 6
 
-   pyqalloy.data_analyzer
+   pyqalloy.curation
    pyqalloy.core
 
 

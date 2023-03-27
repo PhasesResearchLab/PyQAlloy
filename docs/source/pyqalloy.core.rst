@@ -2,7 +2,7 @@ pyqalloy.core package
 =====================
 
 .. note::
-   This core module is not intended to be used at the moment. It will serve as a based for the GUI.
+   This core module is not intended to be used at the moment. It will serve as a base for the GUI in the near future.
 
 
 Submodules
