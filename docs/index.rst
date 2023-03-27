@@ -48,6 +48,7 @@ Index
 .. toctree::
    install
    source/pyqalloy
+   changelog
    examples/UserCuration
    genindex
    :maxdepth: 2
