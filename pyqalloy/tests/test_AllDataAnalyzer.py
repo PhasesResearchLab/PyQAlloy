@@ -1,11 +1,11 @@
 import unittest
 
-from pyqalloy.data_analyzer import curation
+from pyqalloy.curation import analysis
 
 class TestAllDataContextULTERA(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.allD = curation.AllDataAnalyzer()
+        self.allD = analysis.AllDataAnalyzer()
 
     def testInit(self) -> None:
         self.assertGreater(len(self.allD.allComps), 0)

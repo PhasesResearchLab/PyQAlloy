@@ -1,11 +1,11 @@
 import unittest
 
-from pyqalloy.data_analyzer import curation
+from pyqalloy.curation import analysis
 
 class TestSCADA(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.sC = curation.SingleCompositionAnalyzer()
+        self.sC = analysis.SingleCompositionAnalyzer()
         pass
 
     def test_Scan1(self):

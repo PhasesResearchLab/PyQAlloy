@@ -1,12 +1,12 @@
 import unittest
 
-from pyqalloy.data_analyzer import curation
+from pyqalloy.curation import analysis
 
 class TestADA(unittest.TestCase):
 
     def setUp(self) -> None:
         doi = '10.1016/j.jallcom.2008.11.059'
-        self.sDOI = curation.SingleDOIAnalyzer(doi=doi)
+        self.sDOI = analysis.SingleDOIAnalyzer(doi=doi)
         pass
 
     def test_DOIAggregation(self):
