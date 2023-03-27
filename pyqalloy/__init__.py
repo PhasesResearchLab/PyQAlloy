@@ -1,5 +1,5 @@
 from pyqalloy.core import *
-from pyqalloy.data_analyzer import *
+from pyqalloy.curation import *
 
 def showDocs():
     """Open the offline documentation in a web browser."""
