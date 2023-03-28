@@ -36,7 +36,7 @@ PyPI, but you will not be able to make changes to the code.
 
 ## Dataset connection
 If you are using the [**ULTERA Project**](https://ultera.org) infrastructure, now you should fill in your details into the 
-`pyqalloy/credentials.json` 'name' and 'dbKey' fields, and you should be ready to go! :)
+`pyqalloy/credentials.json` with `name`, `dbKey`, and `dataServer` fields, and you should be ready to go! :)
 
 If you are not using the ULTERA infrastructure, you will need to set up your own MongoDB database and fill it with data 
 that conforms to the ULTERA schema. This will be quite elaborate, but we have the tools to do it, and we can assist you. 
