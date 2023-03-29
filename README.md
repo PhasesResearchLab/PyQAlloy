@@ -1,5 +1,14 @@
 # PyQAlloy: Python tools for ensuring the Quality of Alloys data
 
+![GitHub top language](https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pysipfenn)
+[![stable](https://img.shields.io/badge/Read%20The%20Docs-Stable-green)](https://pyqalloy.readthedocs.io/en/stable/) 
+[![latest](https://img.shields.io/badge/Read%20The%20Docs-Latest-green)](https://pyqalloy.readthedocs.io/en/latest/)
+
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit)
+![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release)
+![GitHub commits since tagged version](https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g)
+
 ## Introduction
 
 PyQAlloy development is a part of [**ULTERA Project**](https://ultera.org) carried under the 
