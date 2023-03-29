@@ -9,6 +9,13 @@ PyQAlloy
     :alt: PyPI - Python Version
     :target: https://www.python.org/downloads/release/python-3100/
 
+.. image:: https://img.shields.io/badge/ULTERA-statistics-red
+    :alt: ULTERA statistics
+    :target: https://ultera.org
+
+.. image:: https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy
+    :alt: GitHub license
+
 .. image:: https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit
     :alt: GitHub last commit (by committer)
 
@@ -17,6 +24,9 @@ PyQAlloy
 
 .. image:: https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g
     :alt: GitHub commits since tagged version
+
+.. image:: https://img.shields.io/github/issues/PhasesResearchLab/PyQAlloy
+    :alt: GitHub issues
 
 PyQAlloy development is a part of `ULTERA
 Project <https://ultera.org>`__ carried under the `DOE ARPA-E ULTIMATE
