@@ -2,6 +2,22 @@
 PyQAlloy
 =========
 
+.. image:: https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy
+   :alt: GitHub top language
+
+.. image:: https://img.shields.io/pypi/pyversions/pysipfenn
+    :alt: PyPI - Python Version
+    :target: https://www.python.org/downloads/release/python-3100/
+
+.. image:: https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit
+    :alt: GitHub last commit (by committer)
+
+.. image:: https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release
+    :alt: GitHub Release Date - Published_At
+
+.. image:: https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g
+    :alt: GitHub commits since tagged version
+
 PyQAlloy development is a part of `ULTERA
 Project <https://ultera.org>`__ carried under the `DOE ARPA-E ULTIMATE
 program <https://arpa-e.energy.gov/?q=arpa-e-programs/ultimate>`__ that
