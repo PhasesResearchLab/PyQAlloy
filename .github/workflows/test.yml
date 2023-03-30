@@ -1,4 +1,4 @@
-name: Python package
+name: Multi-OS Build
 
 on: [push, pull_request, release]
 
