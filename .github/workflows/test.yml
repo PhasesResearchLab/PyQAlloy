@@ -24,7 +24,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flask pytest pytest-cov
         python -m pip install -e .
-    
+        
+    - uses: actions/checkout@v3
     - name: Configure ULTERA MongoDB Access
       run: |
         'echo "$PYQALLOYSTATICCONFIG" > ./pyqalloy/credentials.json'
