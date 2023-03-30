@@ -3,10 +3,12 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pysipfenn)
 ![GitHub license](https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy)
-[![ULTERA](https://img.shields.io/badge/ULTERA-statistics-red)](https://ULTERA.org)
+[![codecov](https://codecov.io/gh/PhasesResearchLab/PyQAlloy/branch/main/graph/badge.svg?token=M1DWRD4ML3)](https://codecov.io/gh/PhasesResearchLab/PyQAlloy)
+![example workflow](https://github.com/PhasesResearchLab/PyQAlloy//actions/workflows/test.yml/badge.svg)
 
 [![stable](https://img.shields.io/badge/Read%20The%20Docs-Stable-green)](https://pyqalloy.readthedocs.io/en/stable/) 
 [![latest](https://img.shields.io/badge/Read%20The%20Docs-Latest-green)](https://pyqalloy.readthedocs.io/en/latest/)
+[![ULTERA](https://img.shields.io/badge/ULTERA-statistics-red)](https://ULTERA.org)
 
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit)
 ![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release)
