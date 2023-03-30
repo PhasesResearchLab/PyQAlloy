@@ -2,31 +2,52 @@
 PyQAlloy
 =========
 
-.. image:: https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy
-   :alt: GitHub top language
+|GitHub top language| |PyPI - Python Version| |GitHub license| |Build Status| |Coverage Status|
 
-.. image:: https://img.shields.io/pypi/pyversions/pysipfenn
-    :alt: PyPI - Python Version
-    :target: https://www.python.org/downloads/release/python-3100/
+|ULTERA statistics|
 
-.. image:: https://img.shields.io/badge/ULTERA-statistics-red
-    :alt: ULTERA statistics
-    :target: https://ultera.org
+|GitHub last commit| |GitHub last release| |GitHub commits since tagged version| |GitHub issues|
 
-.. image:: https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy
-    :alt: GitHub license
+.. |GitHub top language| image:: https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy
+  :alt: GitHub top language
+  :target: https://github.com/PhasesResearchLab/PyQAlloy
 
-.. image:: https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit
-    :alt: GitHub last commit (by committer)
+.. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/pysipfenn
+  :alt: PyPI - Python Version
+  :target: https://www.python.org/downloads/release/python-3100/
 
-.. image:: https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release
-    :alt: GitHub Release Date - Published_At
+.. |GitHub license| image:: https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy
+  :alt: GitHub license
+  :target: https://github.com/PhasesResearchLab/PyQAlloy
 
-.. image:: https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g
-    :alt: GitHub commits since tagged version
+.. |GitHub last commit| image:: https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit
+  :alt: GitHub last commit
+  :target: https://github.com/PhasesResearchLab/PyQAlloy/commits/main
 
-.. image:: https://img.shields.io/github/issues/PhasesResearchLab/PyQAlloy
-    :alt: GitHub issues
+.. |GitHub last release| image:: https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release
+  :alt: GitHub Release Date - Published_At
+  :target: https://github.com/PhasesResearchLab/PyQAlloy/releases
+
+.. |ULTERA statistics| image:: https://img.shields.io/badge/ULTERA-statistics-red
+  :alt: ULTERA statistics
+  :target: https://ultera.org
+
+.. |GitHub commits since tagged version| image:: https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g
+  :alt: GitHub commits since tagged version
+  :target: https://github.com/PhasesResearchLab/PyQAlloy/releases
+
+.. |GitHub issues| image:: https://img.shields.io/github/issues/PhasesResearchLab/PyQAlloy
+  :alt: GitHub issues
+  :target: https://github.com/PhasesResearchLab/PyQAlloy/issues
+
+.. |Coverage Status| image:: https://codecov.io/gh/PhasesResearchLab/PyQAlloy/branch/main/graph/badge.svg?token=QZQZQZQZQZ
+  :alt: Coverage Status
+  :target: https://codecov.io/gh/PhasesResearchLab/PyQAlloy
+
+.. |Build Status| image:: https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/test.yml/badge.svg
+  :alt: Build Status
+  :target: https://github.com/PhasesResearchLab/PyQAlloy
+
 
 PyQAlloy development is a part of `ULTERA
 Project <https://ultera.org>`__ carried under the `DOE ARPA-E ULTIMATE
