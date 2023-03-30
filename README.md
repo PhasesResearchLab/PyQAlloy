@@ -4,6 +4,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pysipfenn)
 ![GitHub license](https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy)
 ![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/test.yml/badge.svg)
+![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/lastCommit.yml/badge.svg)
 [![codecov](https://codecov.io/gh/PhasesResearchLab/PyQAlloy/branch/main/graph/badge.svg?token=M1DWRD4ML3)](https://codecov.io/gh/PhasesResearchLab/PyQAlloy)
 
 [![stable](https://img.shields.io/badge/Read%20The%20Docs-Stable-green)](https://pyqalloy.readthedocs.io/en/stable/) 

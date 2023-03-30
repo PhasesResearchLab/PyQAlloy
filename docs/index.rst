@@ -2,7 +2,7 @@
 PyQAlloy
 =========
 
-|GitHub top language| |PyPI - Python Version| |GitHub license| |Build Status| |Coverage Status|
+|GitHub top language| |PyPI - Python Version| |GitHub license| |Build Status|  |Commit Build Status| |Coverage Status|
 
 |ULTERA statistics|
 
@@ -46,6 +46,10 @@ PyQAlloy
 
 .. |Build Status| image:: https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/test.yml/badge.svg
   :alt: Build Status
+  :target: https://github.com/PhasesResearchLab/PyQAlloy
+
+.. |Commit Build Status| image:: https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/lastCommit.yml/badge.svg
+  :alt: Commit Build Status
   :target: https://github.com/PhasesResearchLab/PyQAlloy
 
 
