@@ -27,7 +27,7 @@ jobs:
     
     - name: Configure ULTERA MongoDB Access
       run: |
-        'echo "$PYQALLOYSTATICCONFIG" > pyqalloy/credentials.json'
+        'echo "$PYQALLOYSTATICCONFIG" > ./pyqalloy/credentials.json'
       shell: bash
       env:
         PYQALLOYSTATICCONFIG: ${{secrets.PYQALLOYSTATICCONFIG}}
