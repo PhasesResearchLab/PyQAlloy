@@ -19,6 +19,7 @@ class TestUtilities(unittest.TestCase):
             self.assertEqual(docType, 'online')
 
         with self.subTest(msg='Test if the local documentation is called when inside of main repository directory'):
+            os.chdir('../../')
             docStatus, docType = pqa.showDocs()
             self.assertEqual(docStatus, 0)
             self.assertEqual(docType, 'local')
