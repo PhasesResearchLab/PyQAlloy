@@ -1,4 +1,4 @@
-name: Multi-OS Build
+name: Last Release
 
 on: [pull_request, release]
 
