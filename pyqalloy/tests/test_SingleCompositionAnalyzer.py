@@ -2,7 +2,11 @@ import unittest
 
 from pyqalloy.curation import analysis
 
+
 class TestSCADA(unittest.TestCase):
+    '''Test the SingleCompositionAnalyzer class in the curation module by (1) obtaining the data from ULTERA Database,
+    (2) performing a scan of the compositions around 100, but not exceeding 100, and (3) partially verifying results.
+    '''
 
     def setUp(self) -> None:
         self.sC = analysis.SingleCompositionAnalyzer()
