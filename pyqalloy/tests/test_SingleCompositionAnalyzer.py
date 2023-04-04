@@ -12,14 +12,32 @@ class TestSCADA(unittest.TestCase):
         self.sC = analysis.SingleCompositionAnalyzer()
         pass
 
-    def test_Scan1(self):
-        self.sC.scanCompositionsAround100(queryLimit=10, printOnFly=True)
-        self.sC.scanCompositionsAround100(queryLimit=100, printOnFly=False)
+    def test_ScanQL(self):
+        self.sC.scanCompositionsAround100(queryLimit=20, printOnFly=True)
+        resLen1 = len(self.sC.printOuts)
+        print(f'First scan (QL=10): {resLen1} results')
+        self.sC.scanCompositionsAround100(queryLimit=500, printOnFly=False)
+        resLen2 = len(self.sC.printOuts)
+        print(f'Second scan (QL=+500): {resLen2} results')
+        self.assertGreater(resLen2,
+                           resLen1,
+                           msg='Results are added to the printOuts list whenever scan is run, so the '
+                               'length of the list should increase every time until all abnormalities '
+                               'are found')
+        self.assertGreater(resLen2 - resLen1,
+                           resLen1,
+                           msg='The number of results should increase when the query limit is increased')
 
-    def test_Scan2(self):
+    def test_ScanRL(self):
         with self.subTest(msg='Scan'):
-            self.sC.scanCompositionsAround100(resultLimit=10, printOnFly=True)
-            self.sC.scanCompositionsAround100(resultLimit=30, printOnFly=False)
+            self.sC.scanCompositionsAround100(resultLimit=5, printOnFly=True)
+            resLen1 = len(self.sC.printOuts)
+            print(f'First scan (RL=5): {resLen1} results')
+            self.assertEqual(resLen1, 5)
+            self.sC.scanCompositionsAround100(resultLimit=10, printOnFly=False)
+            resLen2 = len(self.sC.printOuts)
+            print(f'Second scan (RL=+10): {resLen2} results')
+            self.assertEqual(resLen2, 10)
 
         with self.subTest(msg='Write Results'):
             self.sC.writeResultsToFile('testResults.txt')
