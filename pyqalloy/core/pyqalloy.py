@@ -8,26 +8,23 @@ __name__ = 'PyQAlloy'
 
 def showDocs(headless=False) -> Tuple[Union[int, requests.models.Response, str], str]:
     """Open the offline documentation in a web browser, if the documentation is available locally, i.e. when you are
-    in the cloned pySIPFENN GitHub repository you've installed in editable mode. Note the function doesn't use importlib
-    since docs are not part of the package for space savings. Otherwise, the function opens the online documentation.
+    in the cloned pySIPFENN GitHub repository you've installed in editable mode. It should work as expected if you do
+    remote development in VS Code. Note the function doesn't use importlib since docs are not part of the package.
+    In any other case, the function opens the online documentation and ULTERA web page.
 
     Args:
-        headless: If True, the function will not open the documentation in a web browser. If it finds the local
-            documentation, it will return the path to the local documentation. If it finds the online documentation, it
-            will return the response object from the online documentation. If False, the function will open the
-            documentation in a web browser.
+        headless: If True, the function will not open the documentation in a web browser, but will return the response
+        object from the online documentation. If False, the function will open the documentation in a web browser either
+        locally or online. Default is False.
     Returns:
-        If headless=True, the function will return the path to the local documentation or the response object from the
-        online documentation and the type of documentation. If headless=False, the function will return the status code
-        from the web browser and the type of documentation.
+        If headless is False, the function returns a tuple with the status code of the web browser opening the
+        documentation and the type of documentation that was opened. If headless is True, the function returns a tuple
+        with the response object from the online documentation and the type of documentation that was opened.
     """
     import os
-    if os.path.isfile('docs/_build/index.html'):
-        print('Found the loacal documentation. Opening it now...')
-        if headless:
-            return 'file://' + os.path.abspath('docs/_build/index.html'), 'local'
-        else:
-            return os.system('open docs/_build/index.html'), 'local'
+    if os.path.isfile('docs/_build/index.html') and not headless:
+        print('Found the local documentation. Opening it now...')
+        return os.system('open docs/_build/index.html'), 'local'
     else:
         print('Documentation local files were not found. Please be advised that the documentation is only available if '
               'you are in cloned pySIPFENN GitHub repository. pySIPFENN will now attempt to visit '
