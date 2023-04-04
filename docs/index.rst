@@ -12,7 +12,7 @@ PyQAlloy
   :alt: GitHub top language
   :target: https://github.com/PhasesResearchLab/PyQAlloy
 
-.. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/pysipfenn
+.. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/pyqalloy
   :alt: PyPI - Python Version
   :target: https://www.python.org/downloads/release/python-3100/
 

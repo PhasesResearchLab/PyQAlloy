@@ -1,7 +1,7 @@
 # PyQAlloy: Python tools for ensuring the Quality of Alloys data
 
 ![GitHub top language](https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pysipfenn)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyqalloy)
 ![GitHub license](https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy)
 ![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/test.yml/badge.svg)
 ![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/lastCommit.yml/badge.svg)
