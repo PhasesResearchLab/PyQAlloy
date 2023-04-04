@@ -9,9 +9,10 @@ def showDocs():
     import os
     if os.path.isfile('docs/_build/index.html'):
         print('Found the loacal documentation. Opening it now...')
-        os.system('open docs/_build/index.html')
+        return os.system('open docs/_build/index.html'), 'local'
     else:
-        os.system('open https://ultera.org')
         print('Documentation local files were not found. Please be advised that the documentation is only available if'
               'you are in cloned pySIPFENN GitHub repository. pySIPFENN will now attempt to visit '
               'https://pysipfenn.org for the online documentation.')
+        os.system('open https://ultera.org')
+        return os.system('open https://pyqalloy.ultera.org'), 'online'
