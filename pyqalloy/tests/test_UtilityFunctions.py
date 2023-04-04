@@ -19,11 +19,13 @@ class TestUtilities(unittest.TestCase):
             self.assertEqual(docType, 'online')
 
         with self.subTest(msg='Test if the local documentation is called when inside of main repository directory'):
-            os.chdir('../../')
+            if not IN_GITHUB_ACTIONS:
+                os.chdir('../../')
             docStatus, docType = pqa.showDocs()
             self.assertEqual(docStatus, 0)
             self.assertEqual(docType, 'local')
-            os.chdir('pyqalloy/tests/')
+            if not IN_GITHUB_ACTIONS:
+                os.chdir('pyqalloy/tests/')
 
     def testShowDocs_Headless(self):
         '''Test the showDocs() function of pyqalloy package by requesting the documentation in a headless fashion and
@@ -34,11 +36,13 @@ class TestUtilities(unittest.TestCase):
             self.assertEqual(docType, 'online')
 
         with self.subTest(msg='Test if the local documentation is called when inside of main repository directory'):
-            os.chdir('../../')
+            if not IN_GITHUB_ACTIONS:
+                os.chdir('../../')
             docStatus, docType = pqa.showDocs(headless=True)
             self.assertIsInstance(docStatus, str)
             self.assertEqual(docType, 'local')
-            os.chdir('pyqalloy/tests/')
+            if not IN_GITHUB_ACTIONS:
+                os.chdir('pyqalloy/tests/')
 
 if __name__ == '__main__':
     unittest.main()
