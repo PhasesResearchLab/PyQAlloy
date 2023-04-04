@@ -70,6 +70,9 @@ class TestAllDataContextULTERA(unittest.TestCase):
             self.allD.showClustersDBSCAN()
 
         with self.subTest(msg='Printing out a plot with outliers'):
+            self.allD.showOutliersDBSCAN()
+
+        with self.subTest(msg='Printing out a list of the outliers'):
             self.allD.updateOutliersList()
 
 
