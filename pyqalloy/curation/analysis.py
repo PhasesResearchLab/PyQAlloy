@@ -302,8 +302,12 @@ class SingleCompositionAnalyzer(Analyzer):
                 Defaults to 120 meaning 120%.
             uncertainty: Allowed deviation from 100% for the sum of composition. Expressed as percentage.
                 Defaults to 0.21 meaning 0.21%.
-            queryLimit: Maximum number of documents to query from the database collection. Defaults to 10000.
-            resultLimit: Maximum number of results to investigate. Defaults to 1000.
+            queryLimit: Maximum number of documents to query for from the database collection. If the limit is higher
+                than the number of documents in the collection, all documents will be queried. Defaults to 10000.
+            resultLimit: Maximum number of results to investigate across all runs of the function, i.e. if the
+                SingleCompositionAnalyzer object calls this function multiple times, with resultLimits of 10, 20, and 30,
+                the total number of results in self.printOuts will be 30. If you call it with the same resultLimit value,
+                there will be no effect on the Analyzer object. Defaults to 1000.
             printOnFly: If True, prints the results out into console on the fly as they are found. Defaults to False.
 
         '''
@@ -320,6 +324,7 @@ class SingleCompositionAnalyzer(Analyzer):
                 fracsSum = round(sum(fracs), 3)
 
                 def printAlloy(self):
+                    '''Prints the alloy to the console while retaining the information in self.printOuts list'''
                     printOut =  f"DOI: {e['reference']['doi']}"
                     if 'pointer' in e['reference']:
                         printOut += f"  --> {e['reference']['pointer']}"
