@@ -2,7 +2,13 @@ import unittest
 
 from pyqalloy.curation import analysis
 
+
 class TestAllDataContextULTERA(unittest.TestCase):
+    '''Test the AllDataAnalyzer class in the curation module by (1) obtaining the data from ULTERA Database, (2) performing
+    TSNE embeddings under different settings and (3) performing DBSCAN clustering under different settings asserting
+    that the results schema is as expected. In the future, this tests will run on a static subset of the old state of
+    ULTERA Database, but now they require live connection.
+    '''
 
     def setUp(self) -> None:
         self.allD = analysis.AllDataAnalyzer()
@@ -29,7 +35,6 @@ class TestAllDataContextULTERA(unittest.TestCase):
             self.allD.showTSNE()
 
     def testDBSCAN(self) -> None:
-
         with self.subTest(msg='DBSCAN default'):
             _, outlierN1 = self.allD.getDBSCAN(eps=0.05)
 
@@ -53,13 +58,8 @@ class TestAllDataContextULTERA(unittest.TestCase):
             self.assertIn('formula', self.allD.outliers[0])
             self.assertIn('compVec', self.allD.outliers[0])
 
-
         with self.subTest(msg='Retrieve information on where the outlier data came from - no name filter'):
             self.allD.findOutlierDataSources(filterByName=False)
-
-
-
-
 
     def testTSNEplusDBSCAN(self) -> None:
         self.allD.getTSNE()
@@ -71,14 +71,6 @@ class TestAllDataContextULTERA(unittest.TestCase):
 
         with self.subTest(msg='Printing out a plot with outliers'):
             self.allD.updateOutliersList()
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
