@@ -1,11 +1,12 @@
 import requests
+from typing import Union, Tuple, List, Dict, Any, Optional
 
 __version__ = '0.3.4'
 __authors__ = [["Adam Krajewski", "ak@psu.edu"]]
 __name__ = 'PyQAlloy'
 
 
-def showDocs(headless=False):
+def showDocs(headless=False) -> Tuple[Union[int, requests.models.Response, str], str]:
     """Open the offline documentation in a web browser, if the documentation is available locally, i.e. when you are
     in the cloned pySIPFENN GitHub repository you've installed in editable mode. Note the function doesn't use importlib
     since docs are not part of the package for space savings. Otherwise, the function opens the online documentation.
