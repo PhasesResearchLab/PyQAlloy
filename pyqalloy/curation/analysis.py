@@ -309,13 +309,15 @@ class SingleCompositionAnalyzer(Analyzer):
                 the total number of results in self.printOuts will be 30. If you call it with the same resultLimit value,
                 there will be no effect on the Analyzer object. Defaults to 1000.
             printOnFly: If True, prints the results out into console on the fly as they are found. Defaults to False.
-
         '''
 
         query = {'reference.doi': {'$ne': None}}
         if self.name is not None:
             query.update({'meta.name': self.name})
         for e in self.collection.find(query, limit=queryLimit):
+            if len(self.printOuts) >= resultLimit:
+                break
+
             f = e['material']['formula']
             if f not in self.formulas:
                 self.formulas.add(f)
@@ -347,8 +349,7 @@ class SingleCompositionAnalyzer(Analyzer):
                 elif fracsSum<upperBound/100 and fracsSum>(100+uncertainty)/100:
                     printAlloy(self)
 
-            if len(self.printOuts)>resultLimit:
-                break
+
 
     def writeResultsToFile(self, fileName: str) -> None:
         '''Writes the results to a file. The file is created if it does not exist, otherwise it is overwritten.
