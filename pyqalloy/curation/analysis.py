@@ -1,7 +1,6 @@
 from importlib import resources
 import json
 from pymongo import MongoClient
-from pymongo.collection import Collection
 from pymatgen.core import Composition
 
 import numpy as np
@@ -15,8 +14,6 @@ from statistics import mean
 
 from datetime import datetime
 
-import seaborn as sns
-import matplotlib.pyplot as plt
 import plotly.express as px
 
 import xlsxwriter
