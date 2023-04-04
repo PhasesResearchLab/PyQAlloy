@@ -2,7 +2,9 @@
 
 ![GitHub top language](https://img.shields.io/github/languages/top/PhasesResearchLab/PyQAlloy)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyqalloy)
+[![PyPI](https://img.shields.io/pypi/v/pyqalloy)](https://pypi.org/project/pyqalloy/)
 ![GitHub license](https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy)
+
 ![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/test.yml/badge.svg)
 ![build status](https://github.com/PhasesResearchLab/PyQAlloy/actions/workflows/lastCommit.yml/badge.svg)
 [![codecov](https://codecov.io/gh/PhasesResearchLab/PyQAlloy/branch/main/graph/badge.svg?token=M1DWRD4ML3)](https://codecov.io/gh/PhasesResearchLab/PyQAlloy)

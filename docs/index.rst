@@ -2,9 +2,9 @@
 PyQAlloy
 =========
 
-|GitHub top language| |PyPI - Python Version| |GitHub license| |Build Status|  |Commit Build Status| |Coverage Status|
+|GitHub top language| |PyPI - Python Version| |PyPI Version| |ULTERA statistics|
 
-|ULTERA statistics|
+|Build Status|  |Commit Build Status| |Coverage Status| |GitHub license|
 
 |GitHub last commit| |GitHub last release| |GitHub commits since tagged version| |GitHub issues|
 
@@ -15,6 +15,10 @@ PyQAlloy
 .. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/pyqalloy
   :alt: PyPI - Python Version
   :target: https://www.python.org/downloads/release/python-3100/
+
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/pyqalloy
+  :alt: PyPI Version
+  :target: https://pypi.org/project/pyqalloy/
 
 .. |GitHub license| image:: https://img.shields.io/github/license/PhasesResearchLab/PyQAlloy
   :alt: GitHub license
