@@ -29,13 +29,22 @@ class Analyzer:
     Args:
         database: Name of the database to connect to.
         collection: Name of the collection to connect to.
+        collectionManualOverride: If specified, the collectionManualOverride is used instead of the database and
+            collection arguments. It expects a pymongo.collection.Collection object, however, it is not type-checked
+            (only hinted) to allow for more flexibility, including instances of
+            [MontyDB](https://github.com/davidlatwe/MontyDB) Collection class or
+            [Mongomock](https://github.com/mongomock/mongomock) Collection class. Defaults to None and has no effect
+            in that case.
 
     Note:
         The credentials for the database are stored in the credentials.json file in the pyqalloy package. This access
         credentials are not included in the public repository.
     '''
 
-    def __init__(self, database: str, collection: str, collectionManualOverride: Collection = None):
+    def __init__(self,
+                 database: str,
+                 collection: str,
+                 collectionManualOverride: Collection = None):
         if collectionManualOverride is not None:
             self.collection = collectionManualOverride
             self.ultera_database_uri = None
@@ -68,10 +77,20 @@ class SingleDOIAnalyzer(Analyzer):
             was responsible for the upload. Defaults to None.
         database: Name of the database to connect to. Defaults to 'ULTERA_internal'.
         collection: Name of the collection to connect to. Defaults to 'CURATED_Dec2022'.
+        collectionManualOverride: If specified, the collectionManualOverride is used instead of the database and
+            collection arguments. It expects a pymongo.collection.Collection object, however, it is not type-checked
+            (only hinted) to allow for more flexibility, including instances of
+            [MontyDB](https://github.com/davidlatwe/MontyDB) Collection class or
+            [Mongomock](https://github.com/mongomock/mongomock) Collection class. Defaults to None and has no effect
+            in that case.
 
     '''
 
-    def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022',
+    def __init__(self,
+                 doi: str = None,
+                 name: str = None,
+                 database: str = 'ULTERA_internal',
+                 collection: str = 'CURATED_Dec2022',
                  collectionManualOverride: Collection = None):
         super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
         self.name = name
@@ -286,11 +305,20 @@ class SingleCompositionAnalyzer(Analyzer):
         name: Name of the researcher to limit the search to. Defaults to None.
         database: Name of the database to use. Defaults to 'ULTERA_internal'.
         collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
+        collectionManualOverride: If specified, the collectionManualOverride is used instead of the database and
+            collection arguments. It expects a pymongo.collection.Collection object, however, it is not type-checked
+            (only hinted) to allow for more flexibility, including instances of
+            [MontyDB](https://github.com/davidlatwe/MontyDB) Collection class or
+            [Mongomock](https://github.com/mongomock/mongomock) Collection class. Defaults to None and has no effect
+            in that case.
     '''
 
-    def __init__(self, name: str = None, database: str = 'ULTERA_internal', collection: str = 'CURATED_Dec2022',
+    def __init__(self,
+                 name: str = None,
+                 database: str = 'ULTERA_internal',
+                 collection: str = 'CURATED_Dec2022',
                  collectionManualOverride: Collection = None):
-        super().__init__(database=database, collection=collection)
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
         self.name = name
         self.formulas = set()
         self.printOuts = list()
@@ -382,6 +410,12 @@ class AllDataAnalyzer(Analyzer):
         database: Name of the database to use. Defaults to 'ULTERA_internal'.
         collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
         name: Name of the researcher to limit the search to. Defaults to None.
+        collectionManualOverride: If specified, the collectionManualOverride is used instead of the database and
+            collection arguments. It expects a pymongo.collection.Collection object, however, it is not type-checked
+            (only hinted) to allow for more flexibility, including instances of
+            [MontyDB](https://github.com/davidlatwe/MontyDB) Collection class or
+            [Mongomock](https://github.com/mongomock/mongomock) Collection class. Defaults to None and has no effect
+            in that case.
 
     Properties:
         allComps: List of all unique compositions in the database. It is automatically updated when the class is
@@ -391,9 +425,12 @@ class AllDataAnalyzer(Analyzer):
         outliers: List of outliers in the database identified by the last used method (e.g. DBSCAN).
     '''
 
-    def __init__(self, database: str = 'ULTERA_internal', collection: str = 'CURATED_Dec2022', name: str = None,
+    def __init__(self,
+                 database: str = 'ULTERA_internal',
+                 collection: str = 'CURATED_Dec2022',
+                 name: str = None,
                  collectionManualOverride: Collection = None):
-        super().__init__(database=database, collection=collection)
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
         self.name = name
         self.outliers = list()
         self.els = set()
