@@ -21,6 +21,7 @@ import xlsxwriter
 from io import BytesIO
 from typing import List, Dict, Tuple, Union
 
+
 class Analyzer:
     '''Base class for all analyzers. Initializes a connection to the database and collection. Also contains some helper
     functions for data analysis, such as getting a list of all unique DOIs in the collection.
@@ -33,7 +34,8 @@ class Analyzer:
         The credentials for the database are stored in the credentials.json file in the pyqalloy package. This access
         credentials are not included in the public repository.
     '''
-    def __init__(self, database: str, collection: str, collectionManualOverride: Collection=None):
+
+    def __init__(self, database: str, collection: str, collectionManualOverride: Collection = None):
         if collectionManualOverride is not None:
             self.collection = collectionManualOverride
             self.ultera_database_uri = None
@@ -56,19 +58,21 @@ class Analyzer:
             {'$group': {'_id': '$reference.doi'}},
             {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
+
 class SingleDOIAnalyzer(Analyzer):
     '''Extends the Analyzer class. It is used to assess the data coming from a single publication based on the DOI string.
 
     Args:
         doi: DOI string of the publication to analyze. Defaults to None.
-        name: Name of the researcher who uploaded the data. Allows limiting the analysis to what a person was responsible
-            for. Defaults to None.
+        name: Name of the researcher who uploaded the data. This setting allows limiting the analysis to a person who
+            was responsible for the upload. Defaults to None.
         database: Name of the database to connect to. Defaults to 'ULTERA_internal'.
         collection: Name of the collection to connect to. Defaults to 'CURATED_Dec2022'.
 
     '''
+
     def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022',
-                 collectionManualOverride: Collection=None):
+                 collectionManualOverride: Collection = None):
         super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
         self.name = name
         self.doi = doi
@@ -119,10 +123,10 @@ class SingleDOIAnalyzer(Analyzer):
                 self.names.add(e['meta']['name'])
                 self.els.update(list(c.get_el_amt_dict().keys()))
                 self.fStrings.append(
-                    e['material']['percentileFormula']#+'<br>'+
-                    #e['material']['percentileFormula']+'<br>'+
-                    #e['material']['relationalFormula']
-                    )
+                    e['material']['percentileFormula']  # +'<br>'+
+                    # e['material']['percentileFormula']+'<br>'+
+                    # e['material']['relationalFormula']
+                )
             if 'pointer' in e['reference']:
                 self.pointers.add(e['reference']['pointer'])
         # Vectorize based on a list of elements
@@ -140,7 +144,7 @@ class SingleDOIAnalyzer(Analyzer):
         self.getCompVecs()
         self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
 
-    def print_nnDistances(self, minSamples: int=2, printOut: bool=True) -> None:
+    def print_nnDistances(self, minSamples: int = 2, printOut: bool = True) -> None:
         '''Prints the nearest neighbor distances for all unique composition vectors in the publication. The distances
         are calculated using the L1 metric and the k-d tree algorithm. The distances are normalized to the maximum
         distance in the publication. The output is persisted in the self.printLog variable.
@@ -150,16 +154,16 @@ class SingleDOIAnalyzer(Analyzer):
             printOut: If True, the results are printed to the console. Defaults to True.
 
         '''
-        assert len(self.compVecs)>0
-        assert len(self.nn_distances)>0
-        assert len(self.formulas)==len(self.nn_distances)
-        if len(self.nn_distances)>=minSamples:
+        assert len(self.compVecs) > 0
+        assert len(self.nn_distances) > 0
+        assert len(self.formulas) == len(self.nn_distances)
+        if len(self.nn_distances) >= minSamples:
             if self.name is None or self.name in self.names:
                 maxD = max(self.nn_distances)
                 self.printLog += f'\n--->  {self.doi}'
                 for l, f in zip(self.nn_distances, self.formulas):
-                    temp_line = f'{round(l, 4):<10}|  {round(l/maxD, 4):<10} <-- {f}'
-                    self.printLog += temp_line+'\n'
+                    temp_line = f'{round(l, 4):<10}|  {round(l / maxD, 4):<10} <-- {f}'
+                    self.printLog += temp_line + '\n'
                     if printOut:
                         print(temp_line)
                 self.printLog += '\n'
@@ -182,7 +186,7 @@ class SingleDOIAnalyzer(Analyzer):
             List of 2D PCA coordinates for all composition vectors.
 
         '''
-        assert len(self.compVecs)>0
+        assert len(self.compVecs) > 0
         pca = PCA(n_components=2)
         self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
         self.compVecs_2DPCA_minRangeInDim = min([
@@ -191,7 +195,7 @@ class SingleDOIAnalyzer(Analyzer):
 
         return self.compVecs_2DPCA
 
-    def analyze_compVecs_2DPCA(self, minDistance: float=0.001, showFigure: bool=True) -> Union[str, BytesIO]:
+    def analyze_compVecs_2DPCA(self, minDistance: float = 0.001, showFigure: bool = True) -> Union[str, BytesIO]:
         '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
         The minimum range in both dimensions is stored in the self.compVecs_2DPCA_minRangeInDim variable.
         The results are plotted using plotly. The figure is stored in the self.fig variable.
@@ -244,8 +248,9 @@ class SingleDOIAnalyzer(Analyzer):
         assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
         workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
-        cellIndex = f'A{1+skipLines}'
-        worksheet.insert_image(cellIndex, self.doi, {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
+        cellIndex = f'A{1 + skipLines}'
+        worksheet.insert_image(cellIndex, self.doi,
+                               {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
         workbook.close()
 
     def writeManyPlots(self, toPlotList: list, workbookPath: str) -> None:
@@ -283,20 +288,20 @@ class SingleCompositionAnalyzer(Analyzer):
         collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
     '''
 
-    def __init__(self, name: str=None, database: str='ULTERA_internal', collection: str='CURATED_Dec2022',
-                 collectionManualOverride: Collection=None):
+    def __init__(self, name: str = None, database: str = 'ULTERA_internal', collection: str = 'CURATED_Dec2022',
+                 collectionManualOverride: Collection = None):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.formulas = set()
         self.printOuts = list()
 
     def scanCompositionsAround100(self,
-                                  lowerBound: float=80,
-                                  uncertainty: float=0.21,
-                                  upperBound: float=120,
-                                  queryLimit: int=10000,
-                                  resultLimit: int=1000,
-                                  printOnFly: bool=False) -> None:
+                                  lowerBound: float = 80,
+                                  uncertainty: float = 0.21,
+                                  upperBound: float = 120,
+                                  queryLimit: int = 10000,
+                                  resultLimit: int = 1000,
+                                  printOnFly: bool = False) -> None:
         '''Scans the database for compositions around 100% but not exactly 100% as defined by the lower and upper bounds.
         Results are stored in self.printOuts and can be printed out or written to a file using self.writeResultsToFile().
 
@@ -332,7 +337,7 @@ class SingleCompositionAnalyzer(Analyzer):
 
                 def printAlloy(self):
                     '''Prints the alloy to the console while retaining the information in self.printOuts list'''
-                    printOut =  f"DOI: {e['reference']['doi']}"
+                    printOut = f"DOI: {e['reference']['doi']}"
                     if 'pointer' in e['reference']:
                         printOut += f"  --> {e['reference']['pointer']}"
                     printOut += f"\nF:   {f}\n"
@@ -345,16 +350,14 @@ class SingleCompositionAnalyzer(Analyzer):
                     if printOnFly:
                         print(printOut)
 
-                if fracsSum>lowerBound and fracsSum<(100-uncertainty):
+                if fracsSum > lowerBound and fracsSum < (100 - uncertainty):
                     printAlloy(self)
-                elif fracsSum>lowerBound/100 and fracsSum<(100-uncertainty)/100:
+                elif fracsSum > lowerBound / 100 and fracsSum < (100 - uncertainty) / 100:
                     printAlloy(self)
-                elif fracsSum<upperBound and fracsSum>(100+uncertainty):
+                elif fracsSum < upperBound and fracsSum > (100 + uncertainty):
                     printAlloy(self)
-                elif fracsSum<upperBound/100 and fracsSum>(100+uncertainty)/100:
+                elif fracsSum < upperBound / 100 and fracsSum > (100 + uncertainty) / 100:
                     printAlloy(self)
-
-
 
     def writeResultsToFile(self, fileName: str) -> None:
         '''Writes the results to a file. The file is created if it does not exist, otherwise it is overwritten.
@@ -362,13 +365,14 @@ class SingleCompositionAnalyzer(Analyzer):
         Args:
             fileName: Name of the file to write the results to.
         '''
-        assert len(self.printOuts)>0
+        assert len(self.printOuts) > 0
         with open(fileName, 'w+') as f:
             f.write(datetime.now().strftime("%c"))
             f.write('\n')
             for printOut in self.printOuts:
                 f.write(printOut)
                 f.write('\n')
+
 
 class AllDataAnalyzer(Analyzer):
     '''Class to analyze datapoints in the scope of the contents of entire database. It primarily relies on clustering
@@ -387,8 +391,8 @@ class AllDataAnalyzer(Analyzer):
         outliers: List of outliers in the database identified by the last used method (e.g. DBSCAN).
     '''
 
-    def __init__(self, database: str='ULTERA_internal', collection: str='CURATED_Dec2022', name: str=None,
-                 collectionManualOverride: Collection=None):
+    def __init__(self, database: str = 'ULTERA_internal', collection: str = 'CURATED_Dec2022', name: str = None,
+                 collectionManualOverride: Collection = None):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.outliers = list()
@@ -396,8 +400,7 @@ class AllDataAnalyzer(Analyzer):
 
         self.allComps = self.updateAllComps(printOut=False, printOutMinimal=True)
 
-
-    def updateAllComps(self, printOut: bool=False, printOutMinimal: bool=True) -> list:
+    def updateAllComps(self, printOut: bool = False, printOutMinimal: bool = True) -> list:
         '''Identifies a list of all unique compositions in the database, updates the self.els property, and then converts
         the list of compositions into a list of dictionaries with the formula and a vector representation of the composition
         in the order of self.els. The vector representation is used for full-dimensional clustering analysis. Some other methods
@@ -415,9 +418,8 @@ class AllDataAnalyzer(Analyzer):
         print('Updating the list of all unique composition points...')
         formulas = set()
         for e in self.collection.find({
-                'material.nComponents': {'$gte': 3},
-                'reference.doi': {'$ne': None}}):
-
+            'material.nComponents': {'$gte': 3},
+            'reference.doi': {'$ne': None}}):
             rf = e['material']['relationalFormula']
             c = Composition(rf)
             formulas.add(rf)
@@ -444,7 +446,7 @@ class AllDataAnalyzer(Analyzer):
 
         return comps
 
-    def getTSNE(self, perplexity: int=2, init: str='pca') -> np.ndarray:
+    def getTSNE(self, perplexity: int = 2, init: str = 'pca') -> np.ndarray:
         '''Performs TSNE embedding on the list of compositions in self.allComps. The TSNE embedding is stored in the
         'compVec_TSNE2D' key of each dictionary in self.allComps. The TSNE embedding is also returned as a numpy array.
 
@@ -477,10 +479,10 @@ class AllDataAnalyzer(Analyzer):
         Returns:
             None
         '''
-        assert len(self.allComps)>0
+        assert len(self.allComps) > 0
         assert 'formula' in self.allComps[0]
         assert 'compVec_TSNE2D' in self.allComps[0]
-        assert len(self.allComps[0]['compVec_TSNE2D'])==2
+        assert len(self.allComps[0]['compVec_TSNE2D']) == 2
 
         fig = px.scatter(x=[c['compVec_TSNE2D'][0] for c in self.allComps],
                          y=[c['compVec_TSNE2D'][1] for c in self.allComps],
@@ -493,7 +495,7 @@ class AllDataAnalyzer(Analyzer):
                          )
         fig.show()
 
-    def getDBSCAN(self, eps: float=0.3, min_samples: int=2, p: int=1) -> Tuple[np.ndarray, int]:
+    def getDBSCAN(self, eps: float = 0.3, min_samples: int = 2, p: int = 1) -> Tuple[np.ndarray, int]:
         '''Performs DBSCAN clustering on the list of compositions in self.allComps. The DBSCAN clustering is stored in the
         'dbscanCluster' key of each dictionary in self.allComps. The DBSCAN clustering is also returned as a numpy array
         along with the number of outliers identified.
@@ -515,12 +517,12 @@ class AllDataAnalyzer(Analyzer):
             Numpy array of the DBSCAN clustering and the number of outliers identified.
         '''
 
-        assert len(self.allComps)>0
+        assert len(self.allComps) > 0
         assert 'compVec' in self.allComps[0]
 
         dbscan = DBSCAN(eps=eps, min_samples=min_samples, p=p)
         X = np.array([c['compVec'] for c in self.allComps])
-        dbscanClusters =  dbscan.fit_predict(X)
+        dbscanClusters = dbscan.fit_predict(X)
 
         outlierN = 0
         for i, c in enumerate(self.allComps):
@@ -529,11 +531,11 @@ class AllDataAnalyzer(Analyzer):
                 outlierN += 1
 
         print(f'Found {len(set(dbscanClusters))} clusters and {outlierN} outliers.')
-        print(f'Outlier ratio: {round(outlierN/len(dbscanClusters)*100,1)}%')
+        print(f'Outlier ratio: {round(outlierN / len(dbscanClusters) * 100, 1)}%')
 
         return dbscanClusters, outlierN
 
-    def getDBSCANautoEpsilon(self, outlierTargetN: int=10) -> Tuple[np.ndarray, int]:
+    def getDBSCANautoEpsilon(self, outlierTargetN: int = 10) -> Tuple[np.ndarray, int]:
         '''Performs DBSCAN clustering using getDBSCAN() with a range of epsilon values until the desired minimum number
         of outliers is found. It efficiently allows user to find as many outliers as they can investigate independently
         of the number of alloys in the dataset. The DBSCAN clustering is stored in the 'dbscanCluster' key of each dictionary in
@@ -546,18 +548,17 @@ class AllDataAnalyzer(Analyzer):
         Returns:
             Numpy array of the DBSCAN clustering and the number of outliers identified.
         '''
-        assert len(self.allComps)>outlierTargetN
+        assert len(self.allComps) > outlierTargetN
         outlierN = 0
         eps = 1.00001
         assert outlierTargetN > 0
         assert outlierN < outlierTargetN
         while outlierN < outlierTargetN:
-            print(f'Running DBSCAN with eps={round(eps,3)}...')
+            print(f'Running DBSCAN with eps={round(eps, 3)}...')
             dbscanClusters, outlierN = self.getDBSCAN(eps=eps)
             eps -= 0.025
 
         return dbscanClusters, outlierN
-
 
     def showClustersDBSCAN(self):
         '''Plots the TSNE embedding of the compositions in self.allComps colored by the DBSCAN clustering. The plot is
@@ -567,7 +568,7 @@ class AllDataAnalyzer(Analyzer):
         Returns:
             None
         '''
-        assert len(self.allComps)>0
+        assert len(self.allComps) > 0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
         assert 'compVec_TSNE2D' in self.allComps[0]
@@ -605,7 +606,7 @@ class AllDataAnalyzer(Analyzer):
         Returns:
             None
         '''
-        assert len(self.allComps)>0
+        assert len(self.allComps) > 0
         assert 'formula' in self.allComps[0]
         assert 'dbscanCluster' in self.allComps[0]
         assert 'compVec_TSNE2D' in self.allComps[0]
@@ -613,7 +614,7 @@ class AllDataAnalyzer(Analyzer):
 
         fig = px.scatter(x=[c['compVec_TSNE2D'][0] for c in self.allComps],
                          y=[c['compVec_TSNE2D'][1] for c in self.allComps],
-                         color=['outlier' if c['dbscanCluster']==-1 else 'clustered' for c in self.allComps],
+                         color=['outlier' if c['dbscanCluster'] == -1 else 'clustered' for c in self.allComps],
                          hover_name=[c['formula'] for c in self.allComps],
                          color_discrete_sequence=px.colors.qualitative.Dark24,
                          labels={'x': f'{len(self.els)}D->2D TSNE1',
@@ -623,7 +624,7 @@ class AllDataAnalyzer(Analyzer):
                          )
         fig.show()
 
-    def findOutlierDataSources(self, filterByName: bool=False) -> list:
+    def findOutlierDataSources(self, filterByName: bool = False) -> list:
         '''Finds the data sources for the outliers identified by DBSCAN. If filterByName is True, only data sources
         with the same name as the current analyzer name setting will be printed. Otherwise, all data sources will be
         printed.
@@ -635,10 +636,11 @@ class AllDataAnalyzer(Analyzer):
         Returns:
             List of dictionaries containing the data sources for the outliers.
         '''
-        assert len(self.outliers)>0
+        assert len(self.outliers) > 0
         assert 'formula' in self.outliers[0]
 
         outlierSources = list()
+
         def printEntry(entry):
             out = f'Outlier {outlier["formula"]:<25} | {entry["material"]["percentileFormula"]:<25} | {entry["material"]["rawFormula"]}\n'
             out += f'matched to:  {entry["meta"]["name"]:<20} upload '
@@ -646,7 +648,7 @@ class AllDataAnalyzer(Analyzer):
                 out += f'from DOI {entry["reference"]["doi"]}'
             if 'pointer' in entry['reference']:
                 out += f' at position {entry["reference"]["pointer"]}'
-            print(out,'\n')
+            print(out, '\n')
 
         for outlier in self.outliers:
             e = self.collection.find_one({'material.relationalFormula': outlier['formula']})
