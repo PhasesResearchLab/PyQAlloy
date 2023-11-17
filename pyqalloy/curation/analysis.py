@@ -541,6 +541,7 @@ class AllDataAnalyzer(Analyzer):
         outlierN = 0
         eps = 1.00001
         assert outlierTargetN > 0
+        assert outlierN < outlierTargetN
         while outlierN < outlierTargetN:
             print(f'Running DBSCAN with eps={round(eps,3)}...')
             dbscanClusters, outlierN = self.getDBSCAN(eps=eps)
