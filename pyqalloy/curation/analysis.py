@@ -51,11 +51,11 @@ class Analyzer:
             {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
 
 class SingleDOIAnalyzer(Analyzer):
-    '''Extends the Analyzer class. It is used to asses the data coming from a single publication based on the DOI string.
+    '''Extends the Analyzer class. It is used to assess the data coming from a single publication based on the DOI string.
 
     Args:
         doi: DOI string of the publication to analyze. Defaults to None.
-        name: Name of the researcher who uploaded the data. Allows liimiting the analysis to what a person was responsible
+        name: Name of the researcher who uploaded the data. Allows limiting the analysis to what a person was responsible
             for. Defaults to None.
         database: Name of the database to connect to. Defaults to 'ULTERA_internal'.
         collection: Name of the collection to connect to. Defaults to 'CURATED_Dec2022'.
@@ -389,10 +389,10 @@ class AllDataAnalyzer(Analyzer):
 
 
     def updateAllComps(self, printOut: bool=False, printOutMinimal: bool=True) -> list:
-        '''Idenitfies a list of all unique compositions in the database, updates the self.els property, and then converts
+        '''Identifies a list of all unique compositions in the database, updates the self.els property, and then converts
         the list of compositions into a list of dictionaries with the formula and a vector representation of the composition
         in the order of self.els. The vector representation is used for full-dimensional clustering analysis. Some other methods
-        like TSNE enbedding will update these dictionaries with additional keys.
+        like TSNE embedding will update these dictionaries with additional keys.
 
         Args:
             printOut: If True, prints out the list of all unique compositions. Defaults to False.
@@ -442,7 +442,7 @@ class AllDataAnalyzer(Analyzer):
         Args:
             perplexity: Perplexity parameter for the TSNE embedding. Defaults to 2. This is the parameter that controls
                 the number of alloys that are expected to be close to each other in the embedding. The value of 2 is
-                chosen for visualizing outlier detection becuase the database is very sparse, populated by chains of
+                chosen for visualizing outlier detection because the database is very sparse, populated by chains of
                 neighboring alloys, and we do expect many without more than one neighbor. For more general use, the
                 default value of 5-10 is recommended. The value of 30, often used in the literature, is not recommended
                 for HEA datasets.
