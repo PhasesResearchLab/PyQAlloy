@@ -1,6 +1,7 @@
 from importlib import resources
 import json
 from pymongo import MongoClient
+from pymongo.collection import Collection
 from pymatgen.core import Composition
 
 import numpy as np
@@ -32,15 +33,20 @@ class Analyzer:
         The credentials for the database are stored in the credentials.json file in the pyqalloy package. This access
         credentials are not included in the public repository.
     '''
-    def __init__(self, database: str, collection: str):
-        with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
-            self.credentials = json.load(f)
-        self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
-                                   f"@{self.credentials['dataServer']}"
-        self.ultera_client = MongoClient(self.ultera_database_uri)
-        self.collection = self.ultera_client[database][collection]
-        print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
-              f'points detected.')
+    def __init__(self, database: str, collection: str, collectionManualOverride: Collection=None):
+        if collectionManualOverride is not None:
+            self.collection = collectionManualOverride
+            self.ultera_database_uri = None
+            self.ultera_client = None
+        else:
+            with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
+                self.credentials = json.load(f)
+            self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
+                                       f"@{self.credentials['dataServer']}"
+            self.ultera_client = MongoClient(self.ultera_database_uri)
+            self.collection = self.ultera_client[database][collection]
+            print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
+                  f'points detected.')
 
     def get_allDOIs(self) -> List[str]:
         '''Returns a list of all unique DOIs in the collection. This is useful for iterating over all publications in the
@@ -61,8 +67,9 @@ class SingleDOIAnalyzer(Analyzer):
         collection: Name of the collection to connect to. Defaults to 'CURATED_Dec2022'.
 
     '''
-    def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022'):
-        super().__init__(database=database, collection=collection)
+    def __init__(self, doi=None, name=None, database='ULTERA_internal', collection='CURATED_Dec2022',
+                 collectionManualOverride: Collection=None):
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
         self.name = name
         self.doi = doi
         self.resetVariables()
@@ -276,7 +283,8 @@ class SingleCompositionAnalyzer(Analyzer):
         collection: Name of the collection to use. Defaults to 'CURATED_Dec2022'.
     '''
 
-    def __init__(self, name: str=None, database: str='ULTERA_internal', collection: str='CURATED_Dec2022'):
+    def __init__(self, name: str=None, database: str='ULTERA_internal', collection: str='CURATED_Dec2022',
+                 collectionManualOverride: Collection=None):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.formulas = set()
@@ -379,7 +387,8 @@ class AllDataAnalyzer(Analyzer):
         outliers: List of outliers in the database identified by the last used method (e.g. DBSCAN).
     '''
 
-    def __init__(self, database: str='ULTERA_internal', collection: str='CURATED_Dec2022', name: str=None):
+    def __init__(self, database: str='ULTERA_internal', collection: str='CURATED_Dec2022', name: str=None,
+                 collectionManualOverride: Collection=None):
         super().__init__(database=database, collection=collection)
         self.name = name
         self.outliers = list()
