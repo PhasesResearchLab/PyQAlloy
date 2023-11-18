@@ -60,12 +60,26 @@ class Analyzer:
                   f'points detected.')
 
     def get_allDOIs(self) -> List[str]:
-        '''Returns a list of all unique DOIs in the collection. This is useful for iterating over all publications in the
-        collection.'''
-        return [e['doi'] for e in self.collection.aggregate([
-            {'$match': {'reference.doi': {'$ne': None}}},
-            {'$group': {'_id': '$reference.doi'}},
-            {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
+        '''Returns a list of all unique DOIs in the collection. This is useful for iterating over all publications in
+        the collection. If the `collectionManualOverride` is left as None, the function uses the MongoDB aggregation
+        pipeline to perform the operation efficiently on the server side. If the `collectionManualOverride` is specified,
+        the find method is used instead, which is less efficient, but works with other database objects, such as
+        [MontyDB](https://github.com/davidlatwe/MontyDB).
+        '''
+        if self.collectionManualOverride is None:
+            # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
+            return [e['doi'] for e in self.collection.aggregate([
+                {'$match': {'reference.doi': {'$ne': None}}},
+                {'$group': {'_id': '$reference.doi'}},
+                {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
+        else:
+            # In case of a manual override, user is usually trying to "mock" the database and collection objects so
+            # the aggregation pipeline may not be available. In that case, we have to utilize the find() method and
+            # iterate over all documents in the collection.
+            allDOIs = set()
+            for e in self.collection.find({'reference.doi': {'$ne': None}}, {'reference.doi': 1}):
+                allDOIs.add(e['reference']['doi'])
+            return list(allDOIs)
 
 
 class SingleDOIAnalyzer(Analyzer):
