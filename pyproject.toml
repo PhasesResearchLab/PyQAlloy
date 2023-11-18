@@ -43,6 +43,7 @@ dependencies = [
     "plotly",
     "xlsxwriter",
     "kaleido",
+    "fonttools<=4.43.0"
 ]
 
 [project.urls]
