@@ -46,10 +46,12 @@ class Analyzer:
                  collection: str,
                  collectionManualOverride: Collection = None):
         if collectionManualOverride is not None:
+            self.collectionManualOverrideSet = True
             self.collection = collectionManualOverride
             self.ultera_database_uri = None
             self.ultera_client = None
         else:
+            self.collectionManualOverrideSet = False
             with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
                 self.credentials = json.load(f)
             self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
@@ -66,7 +68,7 @@ class Analyzer:
         the find method is used instead, which is less efficient, but works with other database objects, such as
         [MontyDB](https://github.com/davidlatwe/MontyDB).
         '''
-        if self.collectionManualOverride is None:
+        if not self.collectionManualOverrideSet:
             # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
             return [e['doi'] for e in self.collection.aggregate([
                 {'$match': {'reference.doi': {'$ne': None}}},
