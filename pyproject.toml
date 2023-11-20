@@ -43,6 +43,7 @@ dependencies = [
     "plotly",
     "xlsxwriter",
     "kaleido",
+    "montydb>=2.5.2"
 ]
 
 [project.urls]
