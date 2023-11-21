@@ -29,7 +29,7 @@ class TestSCADA(unittest.TestCase):
 
     def setUp(self) -> None:
         self.customCollection = MontyClient(":memory:").db.test
-        with open('../../ULTERA_sample.bson', 'rb+') as f:
+        with open('dev/ULTERA_sample.bson', 'rb+') as f:
             self.customCollection.insert_many(bson.decode_all(f.read()))
         self.sC = analysis.SingleCompositionAnalyzer(collectionManualOverride=self.customCollection)
     def test_CustomDBScanResult(self):
