@@ -106,3 +106,19 @@ for now.
 Start with `CustomDatasetFromBSON.ipynb` notebook which will show you how to create a custom MontyDB in-memory database
 from a BSON file (or JSON if you prefer). Then, you can modify the `UserCuration.ipynb` notebook to use your custom 
 database and work through all exercises there.
+
+### Minimal Snippet
+
+To give a taste of PyQAlloy's interface, here is a minimal snippet that will utilize the ULTERA database and
+scan it for datapoints uploaded by `Adam Krajewski` (who also happens to write this README) with the uncertainty of 
+2.1% (i.e. how much a composition can deviate from 100% to be considered a valid composition) and print the first 10
+results on the fly as they are found.
+
+```python
+from pyqalloy.curation import analysis
+sC = analysis.SingleCompositionAnalyzer(name='Adam Krajewski')
+sC.scanCompositionsAround100(
+    printOnFly=True, 
+    resultLimit=10, 
+    uncertainty=0.21)
+```
