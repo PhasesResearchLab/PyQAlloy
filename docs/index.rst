@@ -105,6 +105,7 @@ Index
    source/pyqalloy
    changelog
    examples/UserCuration
+   examples/CustomDatasetFromBSON
    genindex
    :maxdepth: 2
    :caption: Contents
