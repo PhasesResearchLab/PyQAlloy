@@ -7,7 +7,7 @@ exclude = ["dev*", "examples*"]
 
 [project]
 name = "pyqalloy"
-version = "0.3.6"
+version = "0.3.7"
 authors = [
   { name="Adam Krajewski", email="ak@psu.edu" },
 ]
