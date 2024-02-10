@@ -13,11 +13,6 @@
 [![latest](https://img.shields.io/badge/Read%20The%20Docs-Latest-green)](https://pyqalloy.readthedocs.io/en/latest/)
 [![ULTERA](https://img.shields.io/badge/ULTERA-statistics-red)](https://ULTERA.org)
 
-![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/PhasesResearchLab/PyQAlloy?label=Last%20Commit)
-![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/PhasesResearchLab/PyQAlloy?label=Last%20Release)
-![GitHub commits since tagged version](https://img.shields.io/github/commits-since/PhasesResearchLab/PyQAlloy/v0.3.0?color=g)
-![GitHub issues](https://img.shields.io/github/issues/PhasesResearchLab/PyQAlloy)
-
 ## Introduction
 
 PyQAlloy development is a part of [**ULTERA Project**](https://ultera.org) carried under the 
@@ -26,29 +21,30 @@ aims to develop a new generation of materials for turbine blades in gas turbines
 applications. The [ULTERA Project](https://ultera.org), along is led by 
 [Phases Research Lab](https://phaseslab.com) at Penn State. As a part of it, we developed 
 a new large-scale database of high entropy alloys (HEAs) reported in the literature
-along with their experimental properties. As of March 2023, the database contains
-around 6,000 property data points of 2,500 HEAs coming from almost 500 publications. It is
+along with their experimental properties. As of February 2024, the database contains
+around 6,500 property data points of 2,700 HEAs coming from almost 540 publications. It is
 currently the largest database of HEAs in the world, and while it is not publicly available
-we welcome collaborators who would like to use it in their research or contribute to it.
+we welcome collaborators who would like to use it in their research or contribute to it. ULTERA 
+Database is not simply a dataset but features a robust set of data processing, curation, and 
+aggregation tools we built for the last 3 years. These tools allowed us to remove around the 
+5-10% erroneous data we identified in datasets available in the literature, primarily with help of
+tools like the ones in this repository.
 
-ULTERA Database is not simply a dataset but features a robust set of data processing, 
-curation, and aggregation tools we built for the last 3 years. These tools allowed us to 
-remove around the 5-10% erroneous data we identified in datasets available in the literature.
-Most of our tools are not published yet, as the project is ongoing (they give us a competitive
-advantage), and because most of the tools require an elaborate computing infrastructure setup.
+**PyQAlloy** is a Python package for detecting data abnormalities in datasets of arbitrary alloys, 
+ranging from complex, concentrated solutions, i.e. High Entropy Alloys (HEAs) / Multi Principle 
+Element Alloys (MPEAs) / Concentrated Complex Alloys (CCAs) to more traditional alloys such as 
+steels, nickel-based superalloys, etc. **As of v0.3.7, around half of the tools we developed were added
+here, and the rest will be published in Mid-2024. Figure below serves as a graphical abstract of our approach.**
 
-However, as some of them are less-infrastructure-demanding and are, at the same time
-highly applicable outside HEAs, we decided to release them as separate packages. This repository
-contains the first of such packages, **PyQAlloy**, which is a Python package for detecting data
-abnormalities in datasets of arbitrary alloys, ranging from complex, concentrated solutions, i.e.
-High Entropy Alloys (HEAs) / Multi Principle Element Alloys (MPEAs) / Concentrated Complex Alloys 
-(CCAs) to more traditional alloys such as steels, nickel-based superalloys, etc.
+<img 
+    src="https://raw.githubusercontent.com/PhasesResearchLab/PyQAlloy/main/docs/assets/AbnormalCompositionDetection_v1.png" 
+    alt="Abstract Figure" width="500" align="center" style="display: block; margin-left: auto; margin-right: auto;"/>
 
 ## Installation
 
 ### Basic (as a library)
 
-PyQAlloy is readily available on PyPI (since V0.3.5), and you can get it with a simple:
+PyQAlloy is readily available on PyPI (since V0.3.5), and you can get it) with a simple:
 
     pip install pyqalloy
 
