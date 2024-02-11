@@ -1,0 +1,4 @@
+# Python compiled files and cache
+*.pyc
+**/__pycache__
+pysipfenn.egg-info
