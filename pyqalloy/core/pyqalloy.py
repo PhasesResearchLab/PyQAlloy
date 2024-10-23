@@ -1,9 +1,63 @@
 import requests
+import json
+from importlib import resources
+from urllib.parse import urlparse
 from typing import Union, Tuple, List, Dict, Any, Optional
 
 __version__ = '0.3.5'
 __authors__ = [["Adam Krajewski", "ak@psu.edu"]]
 __name__ = 'PyQAlloy'
+
+
+def setCredentials(
+        name: str,
+        dbKey: str,
+        dataServer: str
+    ) -> None:
+    """Set the credentials for an ULTERA-compatible database (e.g. ULTERA), which itself is MongoDB-compatible. You need to 
+    know (1) username, (2) database key, and (3) data server addres, which you can obtain from your database administrator.
+    Internally, PyQAlloy will persist them to the "credentials.json" file in installation directory and use them to form a 
+    connection URI to the database at runtime, which will then be used to access the data. 
+
+    Args:
+        name: Your username for the database. Make sure that you have basic permissions to read the data (write is not needed).
+        dbKey: The key to access the database. This is a secret key, typically looking like x2mjf932fhx438hxz932, which you should
+            never share with anyone.
+        dataServer: The URI of the data server. This is the address of the server where the data is stored, typically looking like
+            "testcluster.g3kud.mongodb.net/ULTREA_materials". It may also include the port, e.g. 
+            "testcluster.g3kud.mongodb.net:27017/ULTREA_materials", or be appended with additional parameters like
+            "?retryWrites=true&w=majority". It should *not* include the protocol ("mongodb+srv://").
+
+    Returns:
+        None. It persists the credentials to the "credentials.json" file in the installation directory.
+    """
+    with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
+        credentials = json.load(f)
+        if credentials['name'] == name and credentials['dbKey'] == dbKey and credentials['dataServer'] == dataServer:
+            print('The credentials are the same as the existing ones. No changes were made.')
+        else:
+            print('Replacing the existing credentials:\n', credentials, '\nwith the new ones:\n', {'name': name, 'dbKey': dbKey, 'dataServer': dataServer})
+    with resources.files('pyqalloy').joinpath('credentials.json').open('w') as f:
+        json.dump(
+            {'name': name, 'dbKey': dbKey, 'dataServer': dataServer}, 
+            f,
+            indent=4)
+
+def setCredentialsFromURI(
+        uri: str
+    ) -> None:
+    """Construct the credentials dictionary from the MongoDB URI and persists it to the "credentials.json" file using the
+    setCredentials function. 
+
+    Args:
+        uri: The MongoDB URI that contains the username, password, and data server address. The URI should be in the format
+            "mongodb+srv://username:password@dataServer". You can skip the "mongodb+srv://" part without affecting the effects.
+
+    Returns:
+        None. It persists the credentials to the "credentials.json" file in the installation directory.
+    """
+    uri = urlparse(uri)
+    setCredentials(uri.username, uri.password, uri.netloc.split('@')[-1])
 
 
 def showDocs(headless=False) -> Tuple[Union[int, requests.models.Response, str], str]:
