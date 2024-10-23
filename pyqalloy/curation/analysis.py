@@ -44,7 +44,9 @@ class Analyzer:
     def __init__(self,
                  database: str,
                  collection: str,
-                 collectionManualOverride: Collection = None):
+                 collectionManualOverride: Collection = None,
+                 credentialsFile: str = None
+                 ):
         if collectionManualOverride is not None:
             self.collectionManualOverrideSet = True
             self.collection = collectionManualOverride
@@ -52,8 +54,23 @@ class Analyzer:
             self.ultera_client = None
         else:
             self.collectionManualOverrideSet = False
-            with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
-                self.credentials = json.load(f)
+            if credentialsFile is None:
+                path = resources.files('pyqalloy').joinpath('credentials.json')
+                print(f'Loading the database credentials from default location: {path}')
+                with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
+                    self.credentials = json.load(f)
+            else:
+                print(f'Loading the database credentials from: {credentialsFile}')
+                with open(credentialsFile, 'r') as f:
+                    self.credentials = json.load(f)
+            if self.credentials['dbKey']=="x2mjf932fhx438hxz932":
+                raise ValueError('Database credentials have not been set (the default database key is still in the "credentials.json" file). Please either (1) adjust '\
+                                'the credentials.json file in the pyqalloy package to point to your MongoDB-compatible server with ULTERA schema or (2) pass a MongoDB-compatible '\
+                                'collection object to the "collectionManualOverride" argument of the Analyzer class.')
+            for key in ['name', 'dbKey', 'dataServer']:
+                if key not in self.credentials:
+                    raise ValueError(f'Credentials file does not contain the required key "{key}". You need to either adjust the credentials file or pass a MongoDB-compatible '\
+                                     'collection object to the "collectionManualOverride" argument of the Analyzer class.')
             self.ultera_database_uri = f"mongodb+srv://{self.credentials['name']}:{self.credentials['dbKey']}" \
                                        f"@{self.credentials['dataServer']}"
             self.ultera_client = MongoClient(self.ultera_database_uri)
@@ -107,8 +124,9 @@ class SingleDOIAnalyzer(Analyzer):
                  name: str = None,
                  database: str = 'ULTERA_internal',
                  collection: str = 'CURATED_Dec2022',
-                 collectionManualOverride: Collection = None):
-        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
+                 collectionManualOverride: Collection = None,
+                 credentialsFile: str = None):
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride, credentialsFile=credentialsFile)
         self.name = name
         self.doi = doi
         self.resetVariables()
@@ -333,8 +351,9 @@ class SingleCompositionAnalyzer(Analyzer):
                  name: str = None,
                  database: str = 'ULTERA_internal',
                  collection: str = 'CURATED_Dec2022',
-                 collectionManualOverride: Collection = None):
-        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
+                 collectionManualOverride: Collection = None,
+                 credentialsFile: str = None):
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride, credentialsFile=credentialsFile)
         self.name = name
         self.formulas = set()
         self.printOuts = list()
@@ -445,8 +464,9 @@ class AllDataAnalyzer(Analyzer):
                  database: str = 'ULTERA_internal',
                  collection: str = 'CURATED_Dec2022',
                  name: str = None,
-                 collectionManualOverride: Collection = None):
-        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride)
+                 collectionManualOverride: Collection = None,
+                 credentialsFile: str = None):
+        super().__init__(database=database, collection=collection, collectionManualOverride=collectionManualOverride, credentialsFile=credentialsFile)
         self.name = name
         self.outliers = list()
         self.els = set()
