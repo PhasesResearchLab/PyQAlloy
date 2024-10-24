@@ -119,16 +119,28 @@ def parseTemplate(
     print('Imported '+str(parsed.__len__())+' datapoints.\n')
 
     # Convert metadata and data into database datapoints and upload
+    l = 10
+    errors: List[int] = []
     for datapoint in parsed:
-        comp = datapoint['Composition'].replace(' ','')
         try:
-            uploadEntry = datapoint2entry(metaData, datapoint)
-            targetCollection.insert_one(uploadEntry)
-            print(f'[x] {comp}')
+            if 'Composition' not in datapoint:
+                raise ValueError('At minimum, the Composition field is required to establish the material entry.')
+            elif  datapoint['Composition'] == '' or datapoint['Composition'] is None:
+                raise ValueError('At minimum, the Composition field is required to establish the material entry but the Composition field provided is empty.')
+            else:
+                uploadEntry = datapoint2entry(metaData, datapoint)
+                targetCollection.insert_one(uploadEntry)
+                print(f'L{l:<3} [x] {datapoint["Composition"]}')
+                l += 1
         except ValueError as e:
             exceptionMessage = str(e)
-            print(f'[ ] Upload failed! ---> {exceptionMessage}\n')
+            print(f'L{l:<3} [ ] Upload failed! ---> {exceptionMessage}\n')
+            errors.append(l)
+            l += 1
             pass
+    
+    if errors:
+        print(f'\nUpload failed for {len(errors)} entries on Excel spreadsheet lines: {errors}.\n')
 
 def parseTemplateToBSON(
         template: str,
