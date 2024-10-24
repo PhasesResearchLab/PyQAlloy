@@ -130,6 +130,39 @@ def parseTemplate(
             print(f'[ ] Upload failed! ---> {exceptionMessage}\n')
             pass
 
+def parseTemplateToBSON(
+        template: str,
+        target: str = 'data.bson'
+    ) -> None:
+    """Parse an ULTERA template XLSX file and persist the data as BSON (Binary JSON) in the target file. The template file should be
+    in the ULTERA format (at least version 4) and contain all the required fields (e.g. "composition"). Please note that running this
+    will only create a dataset of raw ULTERA upload entries which will (a) miss several fields, (b) not be validated, (c) only 
+    partially homogenized, and (d) not aggregated around unique materials. Thus, not all PyQAlloy functions will work on the data
+    produced by this function and you may need to either (1) contribute it to the ULTERA database and downselect your contribution
+    based on your name (see tutorial) or (2) run the entire ULTERA-like pipeline on your own (separate codebase).
+
+    Args:
+        template: The path to the template file in the XLSX format.
+        target: The path to the target file where the parsed data will be stored in the BSON format.
+
+    Returns:
+        None. It persists the parsed data to the target file.
+    """
+    bson_init(use_bson=True)
+    tempCollection = MontyClient(":memory:").db.temp
+    parseTemplate(template, tempCollection)
+    print('Pushed the data to a temportary MontyDB collection in memory. Document count:', tempCollection.count_documents({}))
+    
+    raw = b""
+    for e in tempCollection.find():
+        raw += bson.BSON.encode(e)
+
+    with open(target, "wb") as fp:
+        fp.write(raw)
+
+    print('Persisted the data to the target file: ', target)
+
+
 
 
 def showDocs(headless=False) -> Tuple[Union[int, requests.models.Response, str], str]:
