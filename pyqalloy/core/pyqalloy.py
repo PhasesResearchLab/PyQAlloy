@@ -1,8 +1,20 @@
+import bson.json_util
 import requests
 import json
 from importlib import resources
 from urllib.parse import urlparse
-from typing import Union, Tuple, List, Dict, Any, Optional
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from typing import Union, Tuple, List, Dict, Any
+
+import pandas as pd
+import bson
+from montydb import MontyClient
+from montydb.types.bson import init as bson_init
+from pymongo import MongoClient
+from pymongo.collection import Collection
+
+from pyqalloy.core.utils import datapoint2entry
 
 __version__ = '0.3.5'
 __authors__ = [["Adam Krajewski", "ak@psu.edu"]]
@@ -58,6 +70,66 @@ def setCredentialsFromURI(
     """
     uri = urlparse(uri)
     setCredentials(uri.username, uri.password, uri.netloc.split('@')[-1])
+
+def parseTemplate(
+        template: str,
+        targetCollection: Collection
+    ) -> None:
+    """Parse an ULTERA template XLSX file and persist the data ainto the ``targetCollection``. The template file should be
+    in the ULTERA format (at least version 4) and contain all the required fields (e.g. "composition"). Please note that running this
+    will only create a dataset of raw ULTERA upload entries which will (a) miss several fields, (b) not be validated, (c) only 
+    partially homogenized, and (d) not aggregated around unique materials. Thus, not all PyQAlloy functions will work on the data
+    produced by this function and you may need to either (1) contribute it to the ULTERA database and downselect your contribution
+    based on your name (see tutorial) or (2) run the entire ULTERA-like pipeline on your own (separate codebase).
+
+    Args:
+        template: The path to the template file in the XLSX format.
+        target: The MongoDB-compatible ``Collection`` object where the parsed data will be stored. It's quite flexible and can
+            be pointed to both in-memory ``mongomock`` or ``MontyDB`` databases, or to a real MongoDB database in the cloud or on-premises.
+
+    Returns:
+        None. It persists the parsed data to the target collection.
+    """
+
+    #Import metadata
+    print('Reading the metadata.')
+    metaDF = pd.read_excel(template, usecols="A:F", nrows=4)
+    meta = metaDF.to_json(orient="split")
+    metaParsed = json.loads(meta, strict=False)['data']
+
+    # Format metadata into a dictionary
+    metaData = {
+        'source': 'LIT',
+        'name': metaParsed[0][1],
+        'email': metaParsed[1][1],
+        'directFetch': metaParsed[2][1],
+        'handFetch': metaParsed[3][1],
+        'comment': metaParsed[0][5],
+        'timeStamp': datetime.now(ZoneInfo('America/New_York')),
+        'dataSheetName': template
+    }
+    print('Data credited to: '+metaParsed[0][1])
+    print('Contact email: '+metaParsed[1][1])
+
+    # Import data
+    print('\nImporting data.')
+    df2 = pd.read_excel(template, usecols="A:N", nrows=10000, skiprows=8)
+    result = df2.to_json(orient="records")
+    parsed = json.loads(result, strict=False)
+    print('Imported '+str(parsed.__len__())+' datapoints.\n')
+
+    # Convert metadata and data into database datapoints and upload
+    for datapoint in parsed:
+        comp = datapoint['Composition'].replace(' ','')
+        try:
+            uploadEntry = datapoint2entry(metaData, datapoint)
+            targetCollection.insert_one(uploadEntry)
+            print(f'[x] {comp}')
+        except ValueError as e:
+            exceptionMessage = str(e)
+            print(f'[ ] Upload failed! ---> {exceptionMessage}\n')
+            pass
+
 
 
 def showDocs(headless=False) -> Tuple[Union[int, requests.models.Response, str], str]:
