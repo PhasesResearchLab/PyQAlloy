@@ -73,7 +73,8 @@ def setCredentialsFromURI(
 
 def parseTemplate(
         template: str,
-        targetCollection: Collection
+        targetCollection: Collection,
+        verbose: bool = True
     ) -> None:
     """Parse an ULTERA template XLSX file and persist the data ainto the ``targetCollection``. The template file should be
     in the ULTERA format (at least version 4) and contain all the required fields (e.g. "composition"). Please note that running this
@@ -112,7 +113,7 @@ def parseTemplate(
     print('Contact email: '+metaParsed[1][1])
 
     # Import data
-    print('\nImporting data.')
+    if verbose: print('\nImporting data.')
     df2 = pd.read_excel(template, usecols="A:N", nrows=10000, skiprows=8)
     result = df2.to_json(orient="records")
     parsed = json.loads(result, strict=False)
@@ -130,11 +131,11 @@ def parseTemplate(
             else:
                 uploadEntry = datapoint2entry(metaData, datapoint)
                 targetCollection.insert_one(uploadEntry)
-                print(f'L{l:<3} [x] {datapoint["Composition"]}')
+                if verbose: print(f'L{l:<3} [x] {datapoint["Composition"]}')
                 l += 1
         except ValueError as e:
             exceptionMessage = str(e)
-            print(f'L{l:<3} [ ] Upload failed! ---> {exceptionMessage}\n')
+            if verbose: print(f'L{l:<3} [ ] Upload failed! ---> {exceptionMessage}\n')
             errors.append(l)
             l += 1
             pass
@@ -144,7 +145,8 @@ def parseTemplate(
 
 def parseTemplateToBSON(
         template: str,
-        target: str = 'data.bson'
+        target: str = 'data.bson',
+        verbose: bool = True
     ) -> None:
     """Parse an ULTERA template XLSX file and persist the data as BSON (Binary JSON) in the target file. The template file should be
     in the ULTERA format (at least version 4) and contain all the required fields (e.g. "composition"). Please note that running this
@@ -161,13 +163,17 @@ def parseTemplateToBSON(
         None. It persists the parsed data to the target file.
     """
     bson_init(use_bson=True)
-    tempCollection = MontyClient(":memory:").db.temp
-    parseTemplate(template, tempCollection)
+    mc = MontyClient(":memory:")
+    tempCollection = mc.temp.temp
+    parseTemplate(template, tempCollection, verbose=verbose)
     print('Pushed the data to a temportary MontyDB collection in memory. Document count:', tempCollection.count_documents({}))
     
     raw = b""
     for e in tempCollection.find():
         raw += bson.BSON.encode(e)
+
+    mc.drop_database('temp')
+    mc.close()
 
     with open(target, "wb") as fp:
         fp.write(raw)
@@ -177,7 +183,9 @@ def parseTemplateToBSON(
 
 def parseTemplateToJSON(
         template: str,
-        target: str = 'data.json'
+        target: str = 'data.json',
+        indent: int = 4,
+        verbose: bool = True
     ) -> None:
     """Parse an ULTERA template XLSX file and persist the data as JSON in the target file, which may not be able to accomodate
     all data types stored in ULTERA MongoDB now or in the future (e.g. binary data of images or raw experimental data). The template
@@ -196,17 +204,32 @@ def parseTemplateToJSON(
         None. It persists the parsed data to the target file.
     """
     bson_init(use_bson=True)
-    tempCollection = MontyClient(":memory:").db.temp
-    parseTemplate(template, tempCollection)
+    mc = MontyClient(":memory:")
+    tempCollection = mc.temp.temp
+    parseTemplate(template, tempCollection, verbose=verbose)
     print('Pushed the data to a temportary MontyDB collection in memory. Document count:', tempCollection.count_documents({}))
 
     with open(target, "w") as fp:
+        dataDicts = []
         for e in tempCollection.find():
             # Serialize
             serialized = bson.json_util.dumps(e)
-            # Pretty print with indent of 4
-            serialized = json.dumps(json.loads(serialized), indent=4)
-            fp.write(serialized + "\n")
+            dataDicts.append(json.loads(serialized))
+        # Pretty print with indent specified by the user (4 by default) or one entry per line if indent is None
+        if indent is None:
+            fp.write('[\n')
+            # Write each item on a new line
+            for i, item in enumerate(dataDicts):
+                line = json.dumps(item)
+                if i < len(dataDicts) - 1:
+                    line += ','
+                fp.write('  ' + line + '\n')
+            fp.write(']\n')
+        else:
+            json.dump(dataDicts, fp, indent=indent)
+
+    mc.drop_database('temp')
+    mc.close()
 
     print('Persisted the data to the target file: ', target)
 
