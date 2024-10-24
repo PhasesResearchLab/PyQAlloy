@@ -1,7 +1,6 @@
 import unittest
 from pyqalloy.curation import analysis
 from montydb import MontyClient
-from montydb.types.bson import init as init_bson
 import bson
 
 referenceResultPrintOuts = [
@@ -29,7 +28,6 @@ class TestSCADA(unittest.TestCase):
     '''
 
     def setUp(self) -> None:
-        init_bson(use_bson=True)
         self.customCollection = MontyClient(":memory:").db.test
         with open('examples/ULTERA_sample.bson', 'rb+') as f:
             self.customCollection.insert_many(bson.decode_all(f.read()))
