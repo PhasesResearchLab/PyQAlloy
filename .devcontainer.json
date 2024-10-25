@@ -24,7 +24,7 @@
        "storage": "16gb"
     },
     "onCreateCommand": [
-      "micromamba shell init --shell  --root-prefix=~/micromamba",
+      "micromamba shell init -s bash",
       "micromamba activate",
       "micromamba config append channels conda-forge",
       "micromamba config set channel_priority strict",
