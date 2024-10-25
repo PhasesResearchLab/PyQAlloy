@@ -1,5 +1,5 @@
 {
-    "image": "ghcr.io/mamba-org/micromamba-devcontainer:git-515d637-jammy",
+    "image": "ghcr.io/mamba-org/micromamba:debian12-slim",
     "customizations": {
       "codespaces": {
         "openFiles": [
@@ -23,8 +23,5 @@
        "memory": "16gb",
        "storage": "16gb"
     },
-    "onCreateCommand": {
-      "shell": "_entrypoint.sh /bin/bash --noprofile --norc -eo pipefail {0}",
-      "command": "micromamba activate && micromamba config append channels conda-forge && micromamba config set channel_priority strict && micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
-    }
+    "onCreateCommand": "micromamba activate && micromamba config append channels conda-forge && micromamba config set channel_priority strict && micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
 }
