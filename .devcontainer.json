@@ -1,5 +1,5 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/miniconda",
+    "image": "ghcr.io/mamba-org/micromamba-devcontainer:git-515d637-jammy",
     "customizations": {
       "codespaces": {
         "openFiles": [
@@ -20,5 +20,5 @@
        "memory": "16gb",
        "storage": "16gb"
     },
-    "onCreateCommand": "conda install -c conda-forge -y python=3.11 jupyter pyqalloy && pip install -e ."
+    "onCreateCommand": "micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
 }
