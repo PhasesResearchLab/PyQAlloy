@@ -23,5 +23,5 @@
        "memory": "16gb",
        "storage": "16gb"
     },
-    "onCreateCommand": "micromamba shell init -s bash && micromamba activate && micromamba config append channels conda-forge && micromamba config set channel_priority strict && micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
+    "onCreateCommand": "eval \"$(micromamba shell hook --shell bash)\" && micromamba activate && micromamba config append channels conda-forge && micromamba config set channel_priority strict && micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
 }
