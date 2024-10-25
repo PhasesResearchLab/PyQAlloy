@@ -12,7 +12,10 @@
           "mechatroner.rainbow-csv",
           "ms-python.python",
           "ms-toolsai.jupyter"
-        ]
+        ],
+        "settings": {
+          "python.defaultInterpreterPath": "/opt/micromamba/bin/python"
+        }
       }
     },
     "hostRequirements": {
