@@ -1,5 +1,5 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "image": "mcr.microsoft.com/devcontainers/miniconda",
     "customizations": {
       "codespaces": {
         "openFiles": [
@@ -14,7 +14,7 @@
           "ms-toolsai.jupyter"
         ],
         "settings": {
-          "python.defaultInterpreterPath": "/opt/micromamba/bin/python"
+          "python.defaultInterpreterPath": "/opt/conda/bin/python"
         }
       }
     },
@@ -23,5 +23,5 @@
        "memory": "16gb",
        "storage": "16gb"
     },
-    "onCreateCommand": "bash <(curl -L micro.mamba.pm/install.sh) && micromamba shell init && micromamba activate && micromamba config append channels conda-forge && micromamba config set channel_priority strict && micromamba install -y python=3.11 jupyter pyqalloy && pip install -e ."
+    "onCreateCommand": "conda install -c conda-forge -y python=3.11 jupyter pyqalloy && pip install -e ."
 }
