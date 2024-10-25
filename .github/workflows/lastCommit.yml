@@ -1,6 +1,12 @@
 name: Last Commit
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'pyqalloy/**'
+      - '.github/workflows/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
 
 jobs:
   tests:
