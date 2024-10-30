@@ -43,6 +43,22 @@ def setCredentials(
     Returns:
         None. It persists the credentials to the "credentials.json" file in the installation directory.
     """
+    # Check if the name, dbKey, and dataServer are not empty strings
+    assert len(name) > 0, 'The name cannot be an empty string.'
+    assert len(dbKey) > 0, 'The dbKey cannot be an empty string.'
+    assert len(dataServer) > 0, 'The dataServer cannot be an empty string.'
+    # Check if the name is not a placeholder
+    assert name not in ['test', 'myname', 'username'], 'The name cannot be a placeholder like "test", "myname", or "username". \
+        You are probably trying to run tutorial without changing the name, but it will not work. Please look at the pre-calculated \
+        results or obtain valid API credentials from database administrator.'
+    # Check if the dataServer is a valid URL
+    try:
+        parsedURL = urlparse(dataServer)
+        assert urlparse(dataServer).scheme == '', 'The dataServer should not include the protocol ("mongodb+srv://").'
+        assert len(parsedURL.netloc) > 0, 'The dataServer should include the address of the server.'
+    except Exception as e:
+        raise ValueError('The dataServer is not a valid URL. The error message is: ' + str(e))
+    
     with resources.files('pyqalloy').joinpath('credentials.json').open('r') as f:
         credentials = json.load(f)
         if credentials['name'] == name and credentials['dbKey'] == dbKey and credentials['dataServer'] == dataServer:
