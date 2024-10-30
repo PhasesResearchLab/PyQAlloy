@@ -48,9 +48,7 @@ def setCredentials(
     assert len(dbKey) > 0, 'The dbKey cannot be an empty string.'
     assert len(dataServer) > 0, 'The dataServer cannot be an empty string.'
     # Check if the name is not a placeholder
-    assert name not in ['test', 'myname', 'username'], 'The name cannot be a placeholder like "test", "myname", or "username". \
-        You are probably trying to run tutorial without changing the name, but it will not work. Please look at the pre-calculated \
-        results or obtain valid API credentials from database administrator.'
+    assert name not in ['test', 'myname', 'username'], 'The name cannot be a placeholder like "test", "myname", or "username".\nYou are probably trying to run tutorial without changing the name, but it will not work. Please look at the pre-calculated results or obtain valid API credentials from database administrator.'
     # Check if the dataServer is a valid URL
     try:
         parsedURL = urlparse(dataServer)
