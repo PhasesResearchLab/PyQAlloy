@@ -192,7 +192,10 @@ class SingleDOIAnalyzer(Analyzer):
         are calculated using the L1 metric and the k-d tree algorithm.'''
         nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
         self.getCompVecs()
-        self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
+        if len(self.compVecs) > 1:
+            self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
+        else:
+            self.nn_distances = [0]
 
     def print_nnDistances(self, minSamples: int = 2, printOut: bool = True) -> None:
         '''Prints the nearest neighbor distances for all unique composition vectors in the publication. The distances
