@@ -209,9 +209,14 @@ class SingleDOIAnalyzer(Analyzer):
         assert len(self.formulas) == len(self.nn_distances)
         if len(self.nn_distances) >= minSamples:
             if self.name is None or self.name in self.names:
+                # Find the maximum distance to normalize the results
                 maxD = max(self.nn_distances)
                 self.printLog += f'\n--->  {self.doi}'
-                for l, f in zip(self.nn_distances, self.formulas):
+                # Align the formulas by the with across the 4 types
+                cols = [line.split("<br>") for line in self.fStrings]
+                widths = [max(len(col.strip()) for col in column) for column in zip(*cols)]
+                prettyFStrings = [' | '.join(col.strip().ljust(width) for col, width in zip(row, widths)) for row in cols]
+                for l, f in zip(self.nn_distances, prettyFStrings):
                     temp_line = f'{round(l, 4):<10}|  {round(l / maxD, 4):<10} <-- {f}'
                     self.printLog += temp_line + '\n'
                     if printOut:
