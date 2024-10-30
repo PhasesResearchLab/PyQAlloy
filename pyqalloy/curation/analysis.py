@@ -116,7 +116,7 @@ class Analyzer:
                     {'reference.doi': 1}
                     ).sort([('meta.timeStamp', 1), ('reference.doi', 1)]):
                 if e['reference']['doi'] not in foundDOIs:
-                    allDOIs.add(e['reference']['doi'])
+                    allDOIs.append(e['reference']['doi'])
                     foundDOIs.add(e['reference']['doi'])
             return allDOIs
 

@@ -22,10 +22,14 @@ referenceResultPrintOuts = [
     'RF:  Cr3.29 Fe3.29 Co3.29 Ni3.29 Al1\n[23.0, 23.0, 23.0, 23.0, 7.0]\n'
     '-->  99.0\n']
 
+referencePrintoutDOI = [
+    "--->  10.1016/j.actamat.2016.06.063",
+    "0.1006    |  1.0        <-- F: Mo1 Cr12 Fe12 Co12 Ni12 | PF: Mo2 Cr24.5 Fe24.5 Co24.5 Ni24.5   | Raw: Co24Cr24Fe24Ni24Mo2 | RF: Mo1 Cr12 Fe12 Co12 Ni12",
+    "0.1006    |  1.0        <-- F: Mo7 Cr23 Fe23 Co23 Ni23 | PF: Mo7.1 Cr23.2 Fe23.2 Co23.2 Ni23.2 | Raw: Co23Cr23Fe23Ni23Mo7 | RF: Mo1 Cr3.29 Fe3.29 Co3.29 Ni3.29"
+]
 
 class TestSCADA(unittest.TestCase):
-    '''Test the SingleCompositionAnalyzer class in the curation module by (1) obtaining the data from ULTERA Database,
-    (2) performing a scan of the compositions around 100, but not exceeding 100, and (3) partially verifying results.
+    '''Test the SingleCompositionAnalyzer class in the curation module with the custom collection of ULTERA samples.
     '''
 
     def setUp(self) -> None:
@@ -75,5 +79,43 @@ class TestSCADA(unittest.TestCase):
                                  msg='Printout does not match the reference')
 
     def tearDown(self) -> None:
+        del self.sC
         self.customCollection.drop()
         pass
+
+class TestSDOIADA(unittest.TestCase):
+    '''Test the SingleDOIAnalyzer class in the curation module with the custom collection of ULTERA samples.
+    '''
+
+    def setUp(self) -> None:
+        init_bson(use_bson=True)
+        self.customCollection = MontyClient(":memory:").db.test
+        with open('examples/ULTERA_sample.bson', 'rb+') as f:
+            self.customCollection.insert_many(bson.decode_all(f.read()))
+        self.sD = analysis.SingleDOIAnalyzer(collectionManualOverride=self.customCollection)
+
+    def test_gettingDOIs(self):
+        doiList = self.sD.get_allDOIs()
+
+        assert '10.1016/j.actamat.2016.06.063' in doiList
+        assert '10.1016/j.actamat.2016.11.016' in doiList
+        assert '10.1016/j.msea.2017.04.111' in doiList
+        assert '10.1016/j.matlet.2017.04.072' in doiList
+
+    def test_NNAnalysisDOI(self):
+        self.sD.setDOI('10.1016/j.actamat.2016.06.063')
+        self.sD.analyze_nnDistances()
+        self.sD.print_nnDistances(printOut=False)
+
+        for i, line in enumerate(referencePrintoutDOI):
+            with self.subTest(msg=f'Test {i}th line'):
+                self.assertIn(line, self.sD.printLog, msg=f'Expected printout line {i} not in the reference')
+        
+
+    def tearDown(self):
+        del self.sD
+        self.customCollection.drop()
+        pass
+
+if __name__ == '__main__':
+    unittest.main()
