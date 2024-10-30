@@ -215,6 +215,7 @@ class SingleDOIAnalyzer(Analyzer):
                 # Find the maximum distance to normalize the results
                 maxD = max(self.nn_distances)
                 self.printLog += f'\n--->  {self.doi}'
+                print(f'--->  {self.doi}')
                 # Align the formulas by the with across the 4 types
                 cols = [line.split("<br>") for line in self.fStrings]
                 widths = [max(len(col.strip()) for col in column) for column in zip(*cols)]
@@ -225,13 +226,15 @@ class SingleDOIAnalyzer(Analyzer):
                     if printOut:
                         print(temp_line)
                 self.printLog += '\n'
+                print('\n')
             else:
-                temp_message = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
+                temp_message = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})\n'
                 self.printLog += temp_message
                 if printOut:
                     print(temp_message)
         else:
-            temp_message = f'Skipping {self.doi:<20}. Not enough data samples (minSamples={minSamples})'
+            temp_message = f"Skipping {self.doi:<20} due to not enough composition data samples (minSamples={minSamples})."
+            temp_message += f"Found only {len(self.nn_distances)} composition/s with {self.collection.count_documents({'reference.doi': self.doi})} datapoints.\n"
             self.printLog += temp_message
             if printOut:
                 print(temp_message)
