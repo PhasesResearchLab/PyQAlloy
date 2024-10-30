@@ -197,7 +197,12 @@ class SingleDOIAnalyzer(Analyzer):
         else:
             self.nn_distances = [0]
 
-    def print_nnDistances(self, minSamples: int = 2, printOut: bool = True) -> None:
+    def print_nnDistances(
+            self, 
+            minSamples: int = 2, 
+            printOut: bool = True,
+            skipFailed: bool = False
+        ) -> None:
         '''Prints the nearest neighbor distances for all unique composition vectors in the publication. The distances
         are calculated using the L1 metric and the k-d tree algorithm. The distances are normalized to the maximum
         distance in the publication. The output is persisted in the self.printLog variable.
@@ -205,6 +210,8 @@ class SingleDOIAnalyzer(Analyzer):
         Args:
             minSamples: Minimum number of samples required to print the results. Defaults to 2.
             printOut: If True, the results are printed to the console. Defaults to True.
+            skipFailed: If True, the method will pass silently over the DOIs that could not generate results, 
+                e.g., due to insufficient data available. False by default.
 
         '''
         assert len(self.compVecs) > 0
@@ -227,12 +234,12 @@ class SingleDOIAnalyzer(Analyzer):
                         print(temp_line)
                 self.printLog += '\n'
                 print('\n')
-            else:
+            elif not skipFailed:
                 temp_message = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})\n'
                 self.printLog += temp_message
                 if printOut:
                     print(temp_message)
-        else:
+        elif not skipFailed:
             temp_message = f"Skipping {self.doi:<20} due to not enough composition data samples (minSamples={minSamples})."
             temp_message += f"Found only {len(self.nn_distances)} composition/s with {self.collection.count_documents({'reference.doi': self.doi})} datapoints.\n"
             self.printLog += temp_message
