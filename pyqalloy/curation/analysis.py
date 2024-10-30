@@ -190,8 +190,10 @@ class SingleDOIAnalyzer(Analyzer):
     def analyze_nnDistances(self) -> None:
         '''Calculates the nearest neighbor distances for all unique composition vectors in the publication. The distances
         are calculated using the L1 metric and the k-d tree algorithm.'''
-        nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
         self.getCompVecs()
+
+        nn = NearestNeighbors(n_neighbors=2, metric='l1', algorithm='kd_tree')
+        
         if len(self.compVecs) > 1:
             self.nn_distances = [l[1] for l in nn.fit(self.compVecs).kneighbors(self.compVecs)[0]]
         else:
@@ -254,7 +256,8 @@ class SingleDOIAnalyzer(Analyzer):
             List of 2D PCA coordinates for all composition vectors.
 
         '''
-        assert len(self.compVecs) > 0
+        if self.compVecs is None or len(self.compVecs) == 0:
+            self.getCompVecs()
         pca = PCA(n_components=2)
         self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
         self.compVecs_2DPCA_minRangeInDim = min([
