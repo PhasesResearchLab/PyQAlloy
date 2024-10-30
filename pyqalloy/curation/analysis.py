@@ -238,6 +238,18 @@ class SingleDOIAnalyzer(Analyzer):
             printOut: If True, the results are printed to the console. Defaults to True.
             skipFailed: If True, the method will pass silently over the DOIs that could not generate results, 
                 e.g., due to insufficient data available. False by default.
+            skipNearEquidistant: If True, the method will skip the DOIs where all distances are nearly the same and 
+                likely do not need to be investigated for anomalies, as this presents one of neat expected outcomes.
+                It judges the distances based on the nearEquidistantThreshold parameter. Defaults to False.
+            nearEquidistantThreshold: Threshold for the near equidistant check. If all distances, normalized to the
+                maximum distance, are higher than this threshold, the DOI is skipped. Defaults to 0.9.
+            skipWellSeparated: If True, the method will skip the DOIs where all distances ensure good separation of
+                compositions, i.e., it is unlikely that anomalies like near duplicates created by typo in the last 
+                significant digit are present. It judges the composition separation based on the wellSeparatedThreshold
+                parameter. Defaults to False.
+            wellSeparatedThreshold: Threshold for the well-separated check. If all distances are higher than this
+                threshold, the analysis of that DOI is skipped. Defaults to 0.01 or 1% of the maximum distance in the
+                compositional space.
 
         '''
         assert len(self.compVecs) > 0
