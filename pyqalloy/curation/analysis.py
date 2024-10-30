@@ -176,10 +176,7 @@ class SingleDOIAnalyzer(Analyzer):
                 self.names.add(e['meta']['name'])
                 self.els.update(list(c.get_el_amt_dict().keys()))
                 self.fStrings.append(
-                    e['material']['percentileFormula']  # +'<br>'+
-                    # e['material']['percentileFormula']+'<br>'+
-                    # e['material']['relationalFormula']
-                )
+                    f"F: {e['material']['formula']}<br>PF: {e['material']['percentileFormula']}<br>Raw: {e['material']['rawFormula']}<br>RF: {e['material']['relationalFormula']}")
             if 'pointer' in e['reference']:
                 self.pointers.add(e['reference']['pointer'])
         # Vectorize based on a list of elements
@@ -272,12 +269,12 @@ class SingleDOIAnalyzer(Analyzer):
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
-                    color=self.fStrings,
+                    color=self.formulas,
                     hover_name=self.fStrings,
                     color_discrete_sequence=px.colors.qualitative.Dark24,
                     width=900, height=400,
                     title=f'<b>{self.doi}</b>  --> {", ".join(self.pointers)}<br>parsed by {", ".join(self.names)}',
-                    labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported'},
+                    labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported (Parsed Formula)'},
                     template='plotly_white')
                 fig.update_traces(
                     marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
