@@ -88,17 +88,32 @@ class Analyzer:
         if not self.collectionManualOverrideSet:
             # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
             return [e['doi'] for e in self.collection.aggregate([
-                {'$match': {'reference.doi': {'$ne': None}}},
-                {'$group': {'_id': '$reference.doi'}},
-                {'$set': {'doi': '$_id', '_id': '$$REMOVE'}}])]
+                    {'$match': {'reference.doi': {'$ne': None}}},
+                    {'$group': {
+                        '_id': '$reference.doi',
+                        'timeStamp': {'$max': '$meta.timeStamp'}
+                    }},
+                    {'$sort': {
+                        'timeStamp': 1,
+                        '_id': 1
+                    }},
+                    {'$set': {'doi': '$_id', '_id': '$$REMOVE'}},
+                    {'$project': {'doi': 1, '_id': 0}}
+                ])]
         else:
             # In case of a manual override, user is usually trying to "mock" the database and collection objects so
             # the aggregation pipeline may not be available. In that case, we have to utilize the find() method and
             # iterate over all documents in the collection.
-            allDOIs = set()
-            for e in self.collection.find({'reference.doi': {'$ne': None}}, {'reference.doi': 1}):
-                allDOIs.add(e['reference']['doi'])
-            return list(allDOIs)
+            foundDOIs = set()
+            allDOIs = list()
+            for e in self.collection.find(
+                    {'reference.doi': {'$ne': None}}, 
+                    {'reference.doi': 1}
+                    ).sort([('meta.timeStamp', 1), ('reference.doi', 1)]):
+                if e['reference']['doi'] not in foundDOIs:
+                    allDOIs.add(e['reference']['doi'])
+                    foundDOIs.add(e['reference']['doi'])
+            return allDOIs
 
 
 class SingleDOIAnalyzer(Analyzer):
