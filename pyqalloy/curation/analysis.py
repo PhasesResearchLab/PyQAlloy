@@ -79,12 +79,17 @@ class Analyzer:
                   f'points detected.')
 
     def get_allDOIs(self) -> List[str]:
-        '''Returns a list of all unique DOIs in the collection. This is useful for iterating over all publications in
-        the collection. If the `collectionManualOverride` is left as None, the function uses the MongoDB aggregation
-        pipeline to perform the operation efficiently on the server side. If the `collectionManualOverride` is specified,
-        the find method is used instead, which is less efficient, but works with other database objects, such as
-        [MontyDB](https://github.com/davidlatwe/MontyDB).
+        '''Returns a list of all unique DOIs in the collection, ordered by the time data has been uploaded (meta.timeStamp) or the unique identifier 
+        of the data point if timeStamp order could not be determined. This is useful for iterating over all publications in the collection. If the 
+        `collectionManualOverride` is left as None, the function uses the MongoDB aggregation pipeline to perform the operation efficiently on the 
+        server side. If the `collectionManualOverride` is specified, the find method is used instead, which is less efficient, but works with other 
+        database objects, such as [MontyDB](https://github.com/davidlatwe/MontyDB).
+
+        Returns:
+            List of all unique DOIs in the collection ordered by the time data has been uploaded (meta.timeStamp) or the unique identifier 
+        of the data point if timeStamp order could not be determined.
         '''
+        
         if not self.collectionManualOverrideSet:
             # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
             return [e['doi'] for e in self.collection.aggregate([
