@@ -89,7 +89,7 @@ class Analyzer:
             List of all unique DOIs in the collection ordered by the time data has been uploaded (meta.timeStamp) or the unique identifier 
         of the data point if timeStamp order could not be determined.
         '''
-        
+
         if not self.collectionManualOverrideSet:
             # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
             return [e['doi'] for e in self.collection.aggregate([
@@ -222,6 +222,10 @@ class SingleDOIAnalyzer(Analyzer):
     def print_nnDistances(
             self, 
             minSamples: int = 2, 
+            skipNearEquidistant: bool = False,
+            nearEquidistantThreshold: float = 0.9,
+            skipWellSeparated: bool = False,
+            wellSeparatedThreshold: float = 0.01,
             printOut: bool = True,
             skipFailed: bool = False
         ) -> None:
@@ -243,19 +247,26 @@ class SingleDOIAnalyzer(Analyzer):
             if self.name is None or self.name in self.names:
                 # Find the maximum distance to normalize the results
                 maxD = max(self.nn_distances)
-                self.printLog += f'\n--->  {self.doi}'
-                print(f'--->  {self.doi}')
-                # Align the formulas by the with across the 4 types
-                cols = [line.split("<br>") for line in self.fStrings]
-                widths = [max(len(col.strip()) for col in column) for column in zip(*cols)]
-                prettyFStrings = [' | '.join(col.strip().ljust(width) for col, width in zip(row, widths)) for row in cols]
-                for l, f in zip(self.nn_distances, prettyFStrings):
-                    temp_line = f'{round(l, 4):<10}|  {round(l / maxD, 4):<10} <-- {f}'
-                    self.printLog += temp_line + '\n'
-                    if printOut:
-                        print(temp_line)
-                self.printLog += '\n'
-                print('\n')
+                # Check if all distances are nearly the same (>nearEquidistantThreshold normalized to max)
+                if skipNearEquidistant and all([l / maxD > nearEquidistantThreshold for l in self.nn_distances]):
+                    pass
+                # Check if all distances separate the compositions well (distance is higher than wellSeparatedThreshold)
+                elif skipWellSeparated and all([l > wellSeparatedThreshold for l in self.nn_distances]):
+                    pass
+                else:
+                    self.printLog += f'\n--->  {self.doi}'
+                    print(f'--->  {self.doi}')
+                    # Align the formulas by the with across the 4 types
+                    cols = [line.split("<br>") for line in self.fStrings]
+                    widths = [max(len(col.strip()) for col in column) for column in zip(*cols)]
+                    prettyFStrings = [' | '.join(col.strip().ljust(width) for col, width in zip(row, widths)) for row in cols]
+                    for l, f in zip(self.nn_distances, prettyFStrings):
+                        temp_line = f'{round(l, 4):<10}|  {round(l / maxD, 4):<10} <-- {f}'
+                        self.printLog += temp_line + '\n'
+                        if printOut:
+                            print(temp_line)
+                    self.printLog += '\n'
+                    print('\n')
             elif not skipFailed:
                 temp_message = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})\n'
                 self.printLog += temp_message
