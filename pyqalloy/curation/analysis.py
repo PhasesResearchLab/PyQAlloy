@@ -289,8 +289,12 @@ class SingleDOIAnalyzer(Analyzer):
                 elif skipWellSeparated and all([l > wellSeparatedThreshold for l in self.nn_distances]):
                     pass
                 else:
-                    self.printLog += f'\n--->  {self.doi}'
-                    print(f'--->  {self.doi}')
+                    title = f"\n--->  {self.doi}"
+                    if len(self.pointers) > 0:
+                        title += f" data from {', '.join(self.pointers).replace('F','Fig ').replace('T','Table ').replace('P','Page ')}"
+                    title += f" parsed by {', '.join(self.names)}"
+                    self.printLog += title
+                    print(title)
                     # Align the formulas by the with across the 4 types
                     cols = [line.split("<br>") for line in self.fStrings]
                     widths = [max(len(col.strip()) for col in column) for column in zip(*cols)]
