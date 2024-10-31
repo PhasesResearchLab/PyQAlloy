@@ -443,7 +443,11 @@ class SingleDOIAnalyzer(Analyzer):
                     print(m)
             return None
 
-    def writePlot(self, workbookPath: str, skipLines: int) -> None:
+    def writePlot(
+            self, 
+            workbookPath: str, 
+            skipLines: int
+        ) -> None:
         '''Writes the plot to the specified report Excel workbook.
 
         Args:
@@ -451,7 +455,9 @@ class SingleDOIAnalyzer(Analyzer):
             skipLines: Number of lines to skip before writing the plot. It is critical to skip lines to avoid overwriting
                 existing data in the workbook.
         '''
-        assert isinstance(self.compVecs_2DPCA_plot, BytesIO)
+        assert isinstance(self.compVecs_2DPCA_plot, BytesIO), "The plot must be generated before writing it to the file."
+        assert workbookPath.endswith('.xlsx'), "The workbookPath must end with .xlsx extension (Excel file)."
+
         workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
         cellIndex = f'A{1 + skipLines}'
@@ -459,7 +465,12 @@ class SingleDOIAnalyzer(Analyzer):
                                {'image_data': self.compVecs_2DPCA_plot, 'x_scale': 0.2, 'y_scale': 0.2})
         workbook.close()
 
-    def writeManyPlots(self, toPlotList: list, workbookPath: str) -> None:
+    def writeManyPlots(
+            self, 
+            toPlotList: list, 
+            workbookPath: str,
+            printOut: bool = True
+        ) -> None:
         '''Writes the plots to the specified report Excel workbook.
 
         Args:
@@ -467,12 +478,14 @@ class SingleDOIAnalyzer(Analyzer):
                 or a string containing the text to write if no plot is available because of a linear trend in the data or
                 because the specified researcher is not present in the group reporting the data.
             workbookPath: Path to the report Excel workbook. Must be a .xlsx file and must not be open at the time of writing.
+            printOut: If True, prints the feedback to the console. Defaults to True.
         '''
-
+        if printOut: print(f'Initializing the workbook at {workbookPath}')
         workbook = xlsxwriter.Workbook(workbookPath)
         worksheet = workbook.add_worksheet()
         skipLines = 0
-
+        
+        if printOut: print(f'Writing {len(toPlotList)} plots to the workbook')
         for tp in toPlotList:
             cellIndex = f'A{1 + skipLines}'
             if isinstance(tp, BytesIO):
@@ -483,6 +496,7 @@ class SingleDOIAnalyzer(Analyzer):
                 worksheet.write(cellIndex, tp)
                 skipLines += 1
         workbook.close()
+        if printOut: print(f'Plots written to the workbook successfully!', end='\n\n', flush=True)
 
 
 class SingleCompositionAnalyzer(Analyzer):
