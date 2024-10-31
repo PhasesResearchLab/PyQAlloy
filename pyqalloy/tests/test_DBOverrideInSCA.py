@@ -97,10 +97,26 @@ class TestSDOIADA(unittest.TestCase):
     def test_gettingDOIs(self):
         doiList = self.sD.get_allDOIs()
 
-        assert '10.1016/j.actamat.2016.06.063' in doiList
-        assert '10.1016/j.actamat.2016.11.016' in doiList
-        assert '10.1016/j.msea.2017.04.111' in doiList
-        assert '10.1016/j.matlet.2017.04.072' in doiList
+        for doi in ['10.1016/j.actamat.2016.06.063', '10.1016/j.actamat.2016.11.016', '10.1016/j.msea.2017.04.111', '10.1016/j.matlet.2017.04.072']:
+            with self.subTest(msg=f'Test {doi}'):
+                self.assertIn(doi, doiList, msg=f'DOI {doi} not found in the list of DOIs')
+
+        with self.subTest(msg='Test length of DOIs'):
+            self.assertEqual(len(doiList), 157, msg='Incorrect number of DOIs found')
+
+    def test_gettingAllDOIsWithNameSet(self):
+
+        with self.subTest(msg='Name set to Adam Krajewski'):
+            oldDOIList = self.sD.get_allDOIs()
+            self.sD.setName('Adam Krajewski')
+            doiList = self.sD.get_allDOIs()
+            self.assertEqual(len(doiList), 107, msg='Incorrect number of DOIs found for Adam Krajewski')
+            self.assertLessEqual(len(doiList), len(oldDOIList), msg='Number of DOIs found for Adam Krajewski is greater than the number of DOIs found without a name set')
+
+        with self.subTest(msg='Crazy name set so no DOIs should be found'):
+            self.sD.setName('Crazy Scientist')
+            doiList = self.sD.get_allDOIs()
+            self.assertEqual(len(doiList), 0, msg='Incorrect number of DOIs found for Crazy Scientist (should be 0)')
 
     def test_NNAnalysisDOI(self):
         self.sD.setDOI('10.1016/j.actamat.2016.06.063')
