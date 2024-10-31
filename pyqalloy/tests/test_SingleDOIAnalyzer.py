@@ -6,7 +6,9 @@ class TestADA(unittest.TestCase):
 
     def setUp(self) -> None:
         doi = '10.1016/j.jallcom.2008.11.059'
-        self.sDOI = analysis.SingleDOIAnalyzer(doi=doi)
+        self.sDOI = analysis.SingleDOIAnalyzer(
+            doi=doi
+            )
         pass
 
     def test_DOIAggregation(self):
@@ -26,14 +28,22 @@ class TestADA(unittest.TestCase):
             self.sDOI.analyze_nnDistances()
             self.sDOI.print_nnDistances()
 
+            doiList = self.sDOI.get_allDOIs()
+            self.assertEqual(len(doiList), 276, msg='Incorrect number of DOIs found for Adam Krajewski. Make sure you are using CURATED_Dec2022 snapshot or adjust the reference number of DOIs.')
+
+
         with self.subTest(msg='Test Name Selection. - empty'):
             self.sDOI.setName('39fd48rym7sfg48g23f')
             self.sDOI.analyze_nnDistances()
             self.sDOI.print_nnDistances()
+            doiList = self.sDOI.get_allDOIs()
+            self.assertEqual(len(doiList), 0, msg='Incorrect number of DOIs found for unexisting name (should be 0)')
 
         with self.subTest(msg='Test Name Selection - revert to all names'):
             self.sDOI.setName(None)
-            self.sDOI.print_nnDistances()
+            log0 = self.sDOI.printLog
+            self.sDOI.print_nnDistances(printOut=False)
+            self.assertGreater(len(self.sDOI.printLog), len(log0), msg='Printout length did not increase after reverting to all names which should cover the case again and generate more printout')
 
         with self.subTest(msg='Print Selection - min samples'):
             self.sDOI.print_nnDistances(minSamples=32)
