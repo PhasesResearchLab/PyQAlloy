@@ -179,6 +179,7 @@ class SingleDOIAnalyzer(Analyzer):
         self.formulas = list()
         self.nn_distances = list()
         self.names = set()
+        self.parentDatabases = set()
         self.els = set()
         self.compVecs = list()
         self.fStrings = list()
@@ -208,8 +209,8 @@ class SingleDOIAnalyzer(Analyzer):
         Returns:
             List of composition vectors in order determined by the database read.
         '''
-        # Reset formulas, els, etc
-        self.formulas, self.els, self.names, self.compVecs, self.fStrings = list(), set(), set(), list(), list()
+        # Reset **selected** variables: formulas, els, etc
+        self.formulas, self.els, self.names, self.compVecs, self.fStrings, self.parentDatabases = list(), set(), set(), list(), list(), set()
         # Find a set of unique formulas from DOI and a set of all elements present in them
         for e in self.collection.find({'reference.doi': self.doi}):
             c = Composition(e['material']['formula'])
@@ -217,6 +218,8 @@ class SingleDOIAnalyzer(Analyzer):
             if reducedFormula not in self.formulas:
                 self.formulas.append(reducedFormula)
                 self.names.add(e['meta']['name'])
+                if 'parentDatabase' in e['meta']:
+                    self.parentDatabases.add(e['meta']['parentDatabase'])
                 self.els.update(list(c.get_el_amt_dict().keys()))
                 self.fStrings.append(
                     f"F: {e['material']['formula']}<br>PF: {e['material']['percentileFormula']}<br>Raw: {e['material']['rawFormula']}<br>RF: {e['material']['relationalFormula']}")
@@ -292,7 +295,9 @@ class SingleDOIAnalyzer(Analyzer):
                     title = f"\n--->  {self.doi}"
                     if len(self.pointers) > 0:
                         title += f" data from {', '.join(self.pointers).replace('F','Fig ').replace('T','Table ').replace('P','Page ')}"
-                    title += f" parsed by {', '.join(self.names)}"
+                    title += f" uploaded by {', '.join(self.names)}"
+                    if len(self.parentDatabases) > 0:
+                        title += f" (based on {', '.join(self.parentDatabases)})"
                     self.printLog += title
                     print(title)
                     # Align the formulas by the with across the 4 types
@@ -415,7 +420,9 @@ class SingleDOIAnalyzer(Analyzer):
                 title = f"<b>{self.doi}</b>"
                 if len(self.pointers) > 0:
                     title += f" data from {', '.join(self.pointers).replace('F','Fig ').replace('T','Table ').replace('P','Page ')}"
-                title += f"<br>parsed by {', '.join(self.names)}"
+                title += f"<br>uploaded by {', '.join(self.names)}"
+                if len(self.parentDatabases) > 0:
+                        title += f" (based on {', '.join(self.parentDatabases)})"
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
