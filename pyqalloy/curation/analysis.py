@@ -320,6 +320,7 @@ class SingleDOIAnalyzer(Analyzer):
     def analyze_compVecs_2DPCA(
             self, 
             minDistance: float = 0.001, 
+            minSamples: int = 3, 
             showFigure: bool = True,
             skipFailed: bool = False,
             printOut: bool = True
@@ -339,6 +340,10 @@ class SingleDOIAnalyzer(Analyzer):
             skipFailed: If True, the method will pass silently over the DOIs that failed to meet tresholds to be 
                 considered for interesting for analysis. It only controls the printout, as figures for failed DOIs are
                 never generated. Defaults to False.
+            minSamples: Minimum number of samples required to perform the analysis. Defaults to 3 which is the minimum
+                to see anything change (any 2 points will always be linear) and discarded based on another rule. For 
+                practical purposes, it is recommended to set this to at least 4, so that breaks in the linearity (which
+                require at least 3 points to be meaningful) can be detected.
 
 
         Returns:
@@ -350,9 +355,23 @@ class SingleDOIAnalyzer(Analyzer):
         assert len(self.formulas) > 0
         assert len(self.fStrings) > 0
         if self.name is None or self.name in self.names:
-            if self.compVecs_2DPCA_minRangeInDim > minDistance:
+            if len(self.compVecs_2DPCA) < minSamples:
+                if not skipFailed:
+                    m = f'Skipping {self.doi:<20}. {len(self.compVecs_2DPCA)} samples are below the minimum requirement set (minSamples={minSamples}).'
+                    self.printLog += m + '\n'
+                    if printOut:
+                        print(m)
+                return None
+            elif not self.compVecs_2DPCA_minRangeInDim > minDistance:
+                if not skipFailed:
+                    m = f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
+                    self.printLog += m + '\n'
+                    if printOut:
+                        print(m)
+                return None
+            else:
                 if printOut:
-                    print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {round(self.compVecs_2DPCA_minRangeInDim, 4)}>{minDistance})\n')
+                    print(f'------>  {self.doi} - non-linear trends detected (minRangeInDim: {round(self.compVecs_2DPCA_minRangeInDim, 4)}>{minDistance})\n')
 
                 # Construct legend strings for the plot
                 allCols = [line.split("<br>") for line in self.fStrings]
@@ -389,13 +408,6 @@ class SingleDOIAnalyzer(Analyzer):
                 if showFigure:
                     fig.show()
                 return self.compVecs_2DPCA_plot
-            else:
-                if not skipFailed:
-                    m = f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
-                    self.printLog += m + '\n'
-                    if printOut:
-                        print(m)
-                return None
         else:
             if not skipFailed:
                 m = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
