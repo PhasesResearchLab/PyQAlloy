@@ -353,6 +353,12 @@ class SingleDOIAnalyzer(Analyzer):
             if self.compVecs_2DPCA_minRangeInDim > minDistance:
                 if printOut:
                     print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {round(self.compVecs_2DPCA_minRangeInDim, 4)}>{minDistance})\n')
+
+                # Plot
+                title = f"<b>{self.doi}</b>"
+                if len(self.pointers) > 0:
+                    title += f" data from {', '.join(self.pointers).replace('F','Fig ').replace('T','Table ').replace('P','Page ')}"
+                title += f"<br>parsed by {', '.join(self.names)}"
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
@@ -360,7 +366,7 @@ class SingleDOIAnalyzer(Analyzer):
                     hover_name=self.fStrings,
                     color_discrete_sequence=px.colors.qualitative.Dark24,
                     width=900, height=400,
-                    title=f'<b>{self.doi}</b>  --> {", ".join(self.pointers)}<br>parsed by {", ".join(self.names)}',
+                    title=title,
                     labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported (Parsed Formula)'},
                     template='plotly_white')
                 fig.update_traces(
