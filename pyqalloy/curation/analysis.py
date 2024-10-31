@@ -321,6 +321,7 @@ class SingleDOIAnalyzer(Analyzer):
             self, 
             minDistance: float = 0.001, 
             showFigure: bool = True,
+            skipFailed: bool = False,
             printOut: bool = True
         ) -> BytesIO:
         '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
@@ -335,6 +336,10 @@ class SingleDOIAnalyzer(Analyzer):
             printOut: If True, the textual results (in addition to figures) are printed to the console. It will report
                 on (1) successful analysis, (2) skipping nearly 1D linear trends, and (3) skipping the analysis if the
                 specified researcher is not present in the group of contributors to the DOI upload. Defaults to True.
+            skipFailed: If True, the method will pass silently over the DOIs that failed to meet tresholds to be 
+                considered for interesting for analysis. It only controls the printout, as figures for failed DOIs are
+                never generated. Defaults to False.
+
 
         Returns:
             Figure in BytesIO format if name is matched and non-linear trends are detected.
@@ -347,7 +352,7 @@ class SingleDOIAnalyzer(Analyzer):
         if self.name is None or self.name in self.names:
             if self.compVecs_2DPCA_minRangeInDim > minDistance:
                 if printOut:
-                    print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {self.compVecs_2DPCA_minRangeInDim}>{minDistance})\n')
+                    print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {round(self.compVecs_2DPCA_minRangeInDim, 4)}>{minDistance})\n')
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
@@ -365,16 +370,18 @@ class SingleDOIAnalyzer(Analyzer):
                     fig.show()
                 return self.compVecs_2DPCA_plot
             else:
-                m = f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
+                if not skipFailed:
+                    m = f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
+                    self.printLog += m + '\n'
+                    if printOut:
+                        print(m)
+                return None
+        else:
+            if not skipFailed:
+                m = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
                 self.printLog += m + '\n'
                 if printOut:
                     print(m)
-                return None
-        else:
-            m = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
-            self.printLog += m + '\n'
-            if printOut:
-                print(m)
             return None
 
     def writePlot(self, workbookPath: str, skipLines: int) -> None:
