@@ -362,6 +362,9 @@ class SingleDOIAnalyzer(Analyzer):
                 widths = [max(len(col) for col in column) for column in zip(*cols)]
                 limitedPrettyFStrings = [' | '.join(col.ljust(width) for col, width in zip(row, widths)) for row in cols]
 
+                # Resize width of the plot based on the number of characters in the legend
+                totalWidth = int(700 + 7.2 * sum(widths))
+
                 # Plot
                 title = f"<b>{self.doi}</b>"
                 if len(self.pointers) > 0:
@@ -373,7 +376,7 @@ class SingleDOIAnalyzer(Analyzer):
                     color=limitedPrettyFStrings,
                     hover_name=self.fStrings,
                     color_discrete_sequence=px.colors.qualitative.Dark24,
-                    width=900, height=400,
+                    width=totalWidth, height=400,
                     title=title,
                     labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported (Parsed Formula)'},
                     template='plotly_white')
