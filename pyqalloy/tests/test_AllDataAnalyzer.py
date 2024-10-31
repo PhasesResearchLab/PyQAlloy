@@ -75,6 +75,10 @@ class TestAllDataContextULTERA(unittest.TestCase):
         with self.subTest(msg='Printing out a list of the outliers'):
             self.allD.updateOutliersList()
 
+    def tearDown(self) -> None:
+        self.allD.ultera_client.close()
+        del self.allD
+        pass
 
 if __name__ == '__main__':
     unittest.main()

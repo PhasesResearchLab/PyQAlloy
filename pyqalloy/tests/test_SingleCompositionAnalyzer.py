@@ -52,3 +52,11 @@ class TestSCADA(unittest.TestCase):
 
         with self.subTest(msg='Write Results'):
             self.sC.writeResultsToFile('testResults.txt')
+
+    def tearDown(self) -> None:
+        self.sC.ultera_client.close()
+        del self.sC
+        pass
+
+if __name__ == '__main__':
+    unittest.main()

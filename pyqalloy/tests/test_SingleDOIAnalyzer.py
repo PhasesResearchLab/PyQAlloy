@@ -115,5 +115,10 @@ class TestADA(unittest.TestCase):
 
             self.sDOI.writeManyPlots(toPlotList=toPrintList, workbookPath='testResultPCA_many.xlsx')
 
+    def tearDown(self) -> None:
+        self.sDOI.ultera_client.close()
+        del self.sDOI
+        pass
+
 if __name__ == '__main__':
     unittest.main()
