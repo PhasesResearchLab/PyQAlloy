@@ -317,19 +317,27 @@ class SingleDOIAnalyzer(Analyzer):
 
             return self.compVecs_2DPCA
 
-    def analyze_compVecs_2DPCA(self, minDistance: float = 0.001, showFigure: bool = True) -> Union[str, BytesIO]:
+    def analyze_compVecs_2DPCA(
+            self, 
+            minDistance: float = 0.001, 
+            showFigure: bool = True,
+            printOut: bool = True
+        ) -> BytesIO:
         '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
         The minimum range in both dimensions is stored in the self.compVecs_2DPCA_minRangeInDim variable.
-        The results are plotted using plotly. The figure is stored in the self.fig variable.
+        The results are plotted using plotly. The figure is also stored in the self.compVecs_2DPCA_plot variable as 
+        a BytesIO object that can be written to a file or stored in MongoDB as a binary object.
 
         Args:
             minDistance: Minimum distance between two points in the 2D PCA space in any dimension to be considered
                 as non-linear. Defaults to 0.001.
             showFigure: If True, the figure is displayed. Defaults to True.
+            printOut: If True, the textual results (in addition to figures) are printed to the console. It will report
+                on (1) successful analysis, (2) skipping nearly 1D linear trends, and (3) skipping the analysis if the
+                specified researcher is not present in the group of contributors to the DOI upload. Defaults to True.
 
         Returns:
-            String if specified researcher is not present in the group from the publication. String if a linear trend
-            is detected. Figure in BytesIO format if name is matched and non-linear trends are detected.
+            Figure in BytesIO format if name is matched and non-linear trends are detected.
 
         '''
 
@@ -338,6 +346,8 @@ class SingleDOIAnalyzer(Analyzer):
         assert len(self.fStrings) > 0
         if self.name is None or self.name in self.names:
             if self.compVecs_2DPCA_minRangeInDim > minDistance:
+                if printOut:
+                    print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {self.compVecs_2DPCA_minRangeInDim}>{minDistance})\n')
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
@@ -355,9 +365,17 @@ class SingleDOIAnalyzer(Analyzer):
                     fig.show()
                 return self.compVecs_2DPCA_plot
             else:
-                return f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
+                m = f'Skipping {self.doi:<20} Nearly 1D linear trand detected.'
+                self.printLog += m + '\n'
+                if printOut:
+                    print(m)
+                return None
         else:
-            return f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
+            m = f'Skipping {self.doi:<20}. Specified researcher ({self.name}) not present in the group ({self.names})'
+            self.printLog += m + '\n'
+            if printOut:
+                print(m)
+            return None
 
     def writePlot(self, workbookPath: str, skipLines: int) -> None:
         '''Writes the plot to the specified report Excel workbook.
