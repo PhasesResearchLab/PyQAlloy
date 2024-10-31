@@ -299,15 +299,23 @@ class SingleDOIAnalyzer(Analyzer):
             List of 2D PCA coordinates for all composition vectors.
 
         '''
+        # If the composition vectors are not pre-calculated, calculate them
         if self.compVecs is None or len(self.compVecs) == 0:
             self.getCompVecs()
-        pca = PCA(n_components=2)
-        self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
-        self.compVecs_2DPCA_minRangeInDim = min([
-            max(self.compVecs_2DPCA[:, 0]) - min(self.compVecs_2DPCA[:, 0]),
-            max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
+        
+        # Capture the special case of a single composition
+        if len(self.compVecs) == 1:
+            self.compVecs_2DPCA = [[0, 0]]
+            self.compVecs_2DPCA_minRangeInDim = 0
+            return self.compVecs_2DPCA
+        else:
+            pca = PCA(n_components=2)
+            self.compVecs_2DPCA = pca.fit_transform(self.compVecs)
+            self.compVecs_2DPCA_minRangeInDim = min([
+                max(self.compVecs_2DPCA[:, 0]) - min(self.compVecs_2DPCA[:, 0]),
+                max(self.compVecs_2DPCA[:, 1]) - min(self.compVecs_2DPCA[:, 1])])
 
-        return self.compVecs_2DPCA
+            return self.compVecs_2DPCA
 
     def analyze_compVecs_2DPCA(self, minDistance: float = 0.001, showFigure: bool = True) -> Union[str, BytesIO]:
         '''Performs a 2D PCA on the composition vectors. The results are stored in the self.compVecs_2DPCA variable.
