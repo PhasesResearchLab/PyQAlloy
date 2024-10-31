@@ -10,6 +10,7 @@
         "extensions": [
           "wijmo.gc-excelviewer",
           "mechatroner.rainbow-csv",
+          "grapecity.gc-excelviewer",
           "ms-python.python",
           "ms-toolsai.jupyter"
         ],
