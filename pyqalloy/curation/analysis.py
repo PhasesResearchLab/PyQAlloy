@@ -354,6 +354,14 @@ class SingleDOIAnalyzer(Analyzer):
                 if printOut:
                     print(f'-------->  {self.doi} - non-linear trends detected (minRangeInDim: {round(self.compVecs_2DPCA_minRangeInDim, 4)}>{minDistance})\n')
 
+                # Construct legend strings for the plot
+                allCols = [line.split("<br>") for line in self.fStrings]
+                cols = [
+                    [c[2].replace('Raw: ', '').strip(), c[1].replace('PF: ', '').strip()] 
+                    for c in allCols]
+                widths = [max(len(col) for col in column) for column in zip(*cols)]
+                limitedPrettyFStrings = [' | '.join(col.ljust(width) for col, width in zip(row, widths)) for row in cols]
+
                 # Plot
                 title = f"<b>{self.doi}</b>"
                 if len(self.pointers) > 0:
@@ -362,13 +370,16 @@ class SingleDOIAnalyzer(Analyzer):
                 fig = px.scatter(
                     x=self.compVecs_2DPCA[:, 0],
                     y=self.compVecs_2DPCA[:, 1],
-                    color=self.formulas,
+                    color=limitedPrettyFStrings,
                     hover_name=self.fStrings,
                     color_discrete_sequence=px.colors.qualitative.Dark24,
                     width=900, height=400,
                     title=title,
                     labels={'x': 'PCA1', 'y': 'PCA2', 'color': 'Alloy Reported (Parsed Formula)'},
                     template='plotly_white')
+                fig.update_layout(
+                    font=dict(family='Consolas, monospace')
+                )
                 fig.update_traces(
                     marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')), selector=dict(mode='markers'))
                 self.compVecs_2DPCA_plot = BytesIO(fig.to_image(format="png", scale=5))
