@@ -78,12 +78,18 @@ class Analyzer:
             print(f'Connected to the {collection} in {database} with {self.collection.estimated_document_count()} data '
                   f'points detected.')
 
-    def get_allDOIs(self) -> List[str]:
+    def get_allDOIs(
+            self,
+            name: str = None
+            ) -> List[str]:
         '''Returns a list of all unique DOIs in the collection, ordered by the time data has been uploaded (meta.timeStamp) or the unique identifier 
         of the data point if timeStamp order could not be determined. This is useful for iterating over all publications in the collection. If the 
         `collectionManualOverride` is left as None, the function uses the MongoDB aggregation pipeline to perform the operation efficiently on the 
         server side. If the `collectionManualOverride` is specified, the find method is used instead, which is less efficient, but works with other 
         database objects, such as [MontyDB](https://github.com/davidlatwe/MontyDB).
+
+        Args:
+            name: Name of the researcher to limit the search to. Defaults to None in which case all DOIs are returned.
 
         Returns:
             List of all unique DOIs in the collection ordered by the time data has been uploaded (meta.timeStamp) or the unique identifier 
@@ -92,27 +98,40 @@ class Analyzer:
 
         if not self.collectionManualOverrideSet:
             # Leveraging MongoDB aggregation pipeline to get a list of all unique DOIs efficiently on the server side
-            return [e['doi'] for e in self.collection.aggregate([
-                    {'$match': {'reference.doi': {'$ne': None}}},
-                    {'$group': {
-                        '_id': '$reference.doi',
-                        'timeStamp': {'$max': '$meta.timeStamp'}
-                    }},
-                    {'$sort': {
-                        'timeStamp': 1,
-                        '_id': 1
-                    }},
-                    {'$set': {'doi': '$_id', '_id': '$$REMOVE'}},
-                    {'$project': {'doi': 1, '_id': 0}}
-                ])]
+            aggregationPipeline = []
+            if name is None:
+                aggregationPipeline.append({'$match': {'reference.doi': {'$ne': None}}})
+            else:
+                aggregationPipeline.append({
+                    '$match': {
+                        'meta.name': name, 
+                        'reference.doi': {'$ne': None}}
+                    })
+            aggregationPipeline.extend([
+                {'$group': {
+                    '_id': '$reference.doi',
+                    'timeStamp': {'$max': '$meta.timeStamp'}
+                }},
+                {'$sort': {
+                    'timeStamp': 1,
+                    '_id': 1
+                }},
+                {'$set': {'doi': '$_id', '_id': '$$REMOVE'}},
+                {'$project': {'doi': 1, '_id': 0}}
+            ])
+
+            return [e['doi'] for e in self.collection.aggregate(aggregationPipeline)]
         else:
             # In case of a manual override, user is usually trying to "mock" the database and collection objects so
             # the aggregation pipeline may not be available. In that case, we have to utilize the find() method and
             # iterate over all documents in the collection.
+            query = {'reference.doi': {'$ne': None}}
+            if name is not None:
+                query.update({'meta.name': name})
             foundDOIs = set()
             allDOIs = list()
             for e in self.collection.find(
-                    {'reference.doi': {'$ne': None}}, 
+                    query, 
                     {'reference.doi': 1}
                     ).sort([('meta.timeStamp', 1), ('reference.doi', 1)]):
                 if e['reference']['doi'] not in foundDOIs:
@@ -177,6 +196,10 @@ class SingleDOIAnalyzer(Analyzer):
     def setName(self, name: str) -> None:
         '''Sets the name of the researcher analysis is limited to.'''
         self.name = name
+
+    def get_allDOIs(self):
+        """Wrapper for the parent class method to get all DOIs in the collection. Passes the name argument to the parent method."""
+        return super().get_allDOIs(name=self.name)
 
     def getCompVecs(self) -> List[List[float]]:
         '''Returns a list of composition vectors for all unique formulas in the publication. The composition vectors are
@@ -483,6 +506,10 @@ class SingleCompositionAnalyzer(Analyzer):
         self.name = name
         self.formulas = set()
         self.printOuts = list()
+
+    def get_allDOIs(self):
+        """Wrapper for the parent class method to get all DOIs in the collection. Passes the name argument to the parent method."""
+        return super().get_allDOIs(name=self.name)
 
     def scanCompositionsAround100(self,
                                   lowerBound: float = 80,
