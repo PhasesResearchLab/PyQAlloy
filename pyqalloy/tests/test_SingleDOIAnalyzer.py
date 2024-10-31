@@ -45,11 +45,15 @@ class TestADA(unittest.TestCase):
 
         with self.subTest(msg='Analyze the Found PCA'):
             self.sDOI.analyze_compVecs_2DPCA(showFigure=False)
+            self.assertIsNotNone(self.sDOI.compVecs_2DPCA_plot)
 
         with self.subTest(msg='Write Plots - wrong name test'):
             self.sDOI.setName('Researcher 934ocfhxm834xfb')
-            retunValue = self.sDOI.analyze_compVecs_2DPCA(showFigure=False)
-            assert 'not present in the group' in retunValue
+            self.sDOI.analyze_compVecs_2DPCA(
+                showFigure=False,
+                skipFailed=False,
+            )
+            self.assertIn('not present in the group', self.sDOI.printLog)
             self.sDOI.setName(None)
 
         with self.subTest(msg='Write Plots'):
