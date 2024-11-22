@@ -209,6 +209,8 @@ class SingleDOIAnalyzer(Analyzer):
         Returns:
             List of composition vectors in order determined by the database read.
         '''
+        if self.doi is None:
+            raise ValueError('DOI has not been set. Please set the DOI before calling this method.')
         # Reset **selected** variables: formulas, els, etc
         self.formulas, self.els, self.names, self.compVecs, self.fStrings, self.parentDatabases = list(), set(), set(), list(), list(), set()
         # Find a set of unique formulas from DOI and a set of all elements present in them
