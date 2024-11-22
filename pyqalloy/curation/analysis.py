@@ -606,13 +606,16 @@ class SingleCompositionAnalyzer(Analyzer):
         Args:
             fileName: Name of the file to write the results to.
         '''
-        assert len(self.printOuts) > 0
-        with open(fileName, 'w+') as f:
-            f.write(datetime.now().strftime("%c"))
-            f.write('\n')
-            for printOut in self.printOuts:
-                f.write(printOut)
+        if len(self.printOuts) > 0:
+            print(f'Writing {len(self.printOuts)} results to {fileName}')
+            with open(fileName, 'w+') as f:
+                f.write(datetime.now().strftime("%c"))
                 f.write('\n')
+                for printOut in self.printOuts:
+                    f.write(printOut)
+                    f.write('\n')
+        else:
+            print('No results to write to the file. No action taken.')
 
 
 class AllDataAnalyzer(Analyzer):
